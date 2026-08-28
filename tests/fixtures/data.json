@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "mesa": "035253",
+  "folio": "A-035253-6",
+  "proceso": {
+    "codigo": "EMC-2026",
+    "nombre": "Elecciones Municipales 2026",
+    "tipo": "Concejo municipal distrital"
+  },
+  "ubicacion": {
+    "local": "I.E. 1120 Pedro A. Labarthe",
+    "direccion": "Av. Precursores 1120",
+    "distrito": "San Miguel",
+    "provincia": "Lima",
+    "departamento": "Lima",
+    "ubigeo": "150132"
+  },
+  "acta": {
+    "tipo": "escrutinio",
+    "paginas": 1
+  }
+}

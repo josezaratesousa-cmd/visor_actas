@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "mesa": "035253",
+  "electores_habiles": 287,
+  "votantes": 241,
+  "votos_validos": 223,
+  "votos_nulos": 7,
+  "votos_blancos": 11,
+  "opciones": [
+    {
+      "orden": 1,
+      "codigo": "MRU",
+      "nombre": "Movimiento Regional Unidad",
+      "partido": "M.R.U. + Alianza",
+      "votos": 86
+    },
+    {
+      "orden": 2,
+      "codigo": "ACL",
+      "nombre": "Alianza Civica del Litoral",
+      "partido": "ACL",
+      "votos": 62
+    },
+    {
+      "orden": 3,
+      "codigo": "FVI",
+      "nombre": "Frente Vecinal Independiente",
+      "partido": "Frente Vecinal",
+      "votos": 44
+    },
+    {
+      "orden": 4,
+      "codigo": "PPL",
+      "nombre": "Partido del Progreso Local",
+      "partido": "P.P.L.",
+      "votos": 31
+    }
+  ]
+}

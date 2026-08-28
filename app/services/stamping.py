@@ -1,9 +1,18 @@
-"""Client for the Stamping.io evidence API.
+"""Read-only client for the Stamping.io evidence API.
 
-One rule drives the whole module: the API token travels in a header, never
-in a query string. Stamping's own public viewer passes it as `?token=`, and
-that token now sits in plain text in the web server access logs, hundreds of
-times over. Not repeating that here is the entire point of having a backend.
+The viewer looks up attestations. It never creates them. Registration lives
+in tools/register_record.py, which runs from an operator's shell and is not
+importable from the request path.
+
+That separation is structural rather than a matter of discipline: this class
+refuses any method other than GET, so an attacker who reaches the request
+handling code still has no way to forge an attestation through it. The token
+this service uses can — and should — be one that only grants reads.
+
+The second rule is that the API token travels in a header, never in a query
+string. Stamping's own public viewer passes it as `?token=`, and that token
+now sits in plain text in the web server access logs, hundreds of times over.
+Not repeating that is much of the point of having a backend at all.
 """
 
 from __future__ import annotations
@@ -82,21 +91,12 @@ class StampingClient:
             raise RecordNotFound(f"no evidence for {params}")
         return response.payload
 
-    # ── registration ──────────────────────────────────────────────────────
-
-    async def register(self, body: dict[str, Any]) -> dict[str, Any]:
-        """Register a new piece of evidence.
-
-        `info` is only accepted on a POST body with async=true, so the
-        caller cannot opt out of it.
-        """
-        body = {**body, "async": "true"}
-        response = await self._request("POST", "/stamp/", json=body)
-        return response.payload
-
     # ── transport ─────────────────────────────────────────────────────────
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> StampingResponse:
+        if method != "GET":
+            # Structural, not a policy check. See the module docstring.
+            raise StampingError("the viewer is read-only")
         if self._client is None:
             raise StampingError("client used outside its context manager")
         if not self._settings.stamping_token:
