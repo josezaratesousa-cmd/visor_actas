@@ -1,14 +1,14 @@
 # ─────────────────────────────────────────────────────────────
-# REPOSITORIO PÚBLICO. Lo que entra al historial no sale nunca.
-# Ante la duda, no se commitea.
+# PUBLIC REPOSITORY. What enters the history never leaves.
+# When in doubt, do not commit.
 # ─────────────────────────────────────────────────────────────
 
-# Credenciales. Viven en /home/votolibre/config/peru2026/, fuera del
-# web root. Estas reglas son una segunda barrera, no la principal.
-*.ini
-*.env
-.env*
+# Credentials. The real .env lives outside the repository; these rules
+# are a second barrier, not the main one.
+.env
+.env.*
 !.env.example
+*.ini
 *.pem
 *.key
 *.p12
@@ -24,11 +24,16 @@ data/cache/
 data/og/
 data/pages/
 
-# Logs y temporales
-error_log
-*.log
-.DS_Store
+# Python
 __pycache__/
-*.pyc
-venv/
+*.py[cod]
 .venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# Logs and temporaries
+*.log
+error_log
+.DS_Store
