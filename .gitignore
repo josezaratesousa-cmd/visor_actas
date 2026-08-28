@@ -6,9 +6,9 @@
 # Credenciales. Viven en /home/votolibre/config/peru2026/, fuera del
 # web root. Estas reglas son una segunda barrera, no la principal.
 *.ini
-!.env.example
 *.env
 .env*
+!.env.example
 *.pem
 *.key
 *.p12
