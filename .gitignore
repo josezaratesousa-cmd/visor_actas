@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────
+# REPOSITORIO PÚBLICO. Lo que entra al historial no sale nunca.
+# Ante la duda, no se commitea.
+# ─────────────────────────────────────────────────────────────
+
+# Credenciales. Viven en /home/votolibre/config/peru2026/, fuera del
+# web root. Estas reglas son una segunda barrera, no la principal.
+*.ini
+!config.example.ini
+*.env
+.env*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Actas reales: contienen datos personales de los miembros de mesa
+# en la firma PAdES. Solo se versionan las sintéticas de pruebas/actas/.
+data/actas/
+data/custodia/
+
+# Artefactos derivados: se regeneran con py/render_paginas.py
+data/cache/
+data/og/
+data/paginas/
+
+# Logs y temporales
+error_log
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+venv/
+.venv/
