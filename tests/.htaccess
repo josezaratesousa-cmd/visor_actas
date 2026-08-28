@@ -1,0 +1,2 @@
+# Not reachable over HTTP. Included by PHP, or run from the shell.
+Require all denied
