@@ -37,3 +37,6 @@ venv/
 *.log
 error_log
 .DS_Store
+
+# Staging destination for the preview: belongs to the operator, not the repo
+tools/deploy.env

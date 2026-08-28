@@ -79,7 +79,7 @@ async def test_missing_document_is_distinguishable_from_a_broken_store(tmp_path)
     [
         "../../../../etc/passwd",
         "/etc/passwd",
-        "EMC-2026/../../../home/votolibre/config/peru2026/.env",
+        "EMC-2026/../../../etc/visor-actas/.env",
         "a//b",
         "",
         " ",

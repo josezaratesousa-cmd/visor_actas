@@ -8,8 +8,12 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")/.." && pwd)/web"
-DST="/home/votolibre/public_html/peru/2026"
-WEB_GROUP="nobody"
+# Destination and web group belong to whoever is staging the preview, not
+# to this repository. Set them in tools/deploy.env, which is not versioned.
+CONF="$(dirname "$0")/deploy.env"
+[ -f "$CONF" ] && . "$CONF"
+DST="${PREVIEW_DEST:?set PREVIEW_DEST in tools/deploy.env}"
+WEB_GROUP="${PREVIEW_GROUP:-nobody}"
 
 mkdir -p "$DST"
 rsync -a --delete --exclude '.git*' "$SRC/" "$DST/"

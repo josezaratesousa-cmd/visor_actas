@@ -24,9 +24,13 @@ a { color: inherit; }
   padding: calc(env(safe-area-inset-top) + 12px) 15px 11px;
   display: flex; align-items: center; gap: 11px;
 }
-.brand { font-family: var(--display); font-weight: 800; font-size: 19px;
-  color: var(--red); letter-spacing: -.02em; padding-right: 10px;
+.brand { display: flex; align-items: center; padding-right: 10px;
   border-right: 2px solid var(--rule-strong); line-height: 1; }
+.brand__logo { height: 26px; width: auto; display: block; }
+/* The wordmark only appears once the official logo has failed to load. */
+.brand__text { display: none; font-family: var(--display); font-weight: 800;
+  font-size: 19px; color: var(--red); letter-spacing: -.02em; }
+.brand--text .brand__text { display: block; }
 .headline { flex: 1; min-width: 0; }
 .headline__station { font-family: var(--data); font-weight: 600; font-size: 16px; line-height: 1.15; }
 .headline__process { font-size: 11px; color: var(--grey); font-weight: 600;

@@ -6,6 +6,7 @@ misconfigured deployment fails loudly instead of silently running with
 placeholder credentials.
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -13,7 +14,10 @@ from typing import Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DEFAULT_ENV_FILE = "/home/votolibre/config/peru2026/.env"
+# Where the .env lives is a deployment decision, not a property of the code.
+# APP_ENV_FILE names it; the fallback is a conventional system path. Nothing
+# here points at a particular host or account.
+DEFAULT_ENV_FILE = os.getenv("APP_ENV_FILE", "/etc/visor-actas/.env")
 
 
 class Settings(BaseSettings):

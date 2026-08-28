@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/brand/icon-192.png">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
@@ -18,8 +20,13 @@
   <div class="flag"></div>
 
   <header class="topbar">
-    <!-- PLACEHOLDER: replace with the official ONPE mark -->
-    <span class="brand">ONPE</span>
+    <!-- Official mark when present; typographic wordmark until then.
+         See web/assets/brand/README.md -->
+    <span class="brand">
+      <img class="brand__logo" src="assets/brand/logo.svg" alt="ONPE"
+           onerror="this.remove();this.parentNode.classList.add('brand--text')">
+      <span class="brand__text">ONPE</span>
+    </span>
     <div class="headline">
       <div class="headline__station" id="station"></div>
       <div class="headline__process" id="process"></div>
