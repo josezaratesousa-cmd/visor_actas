@@ -13,6 +13,7 @@ pymupdf==1.25.1
 pillow==11.1.0
 
 # Storage
+cryptography==44.0.0
 boto3==1.35.92
 
 # Development
