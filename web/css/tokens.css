@@ -1,0 +1,52 @@
+/* Design tokens. Light and dark are the same palette at different
+   luminance; nothing else in the project hardcodes a colour. */
+
+:root {
+  --red: #D0202E;
+  --red-deep: #8E1219;
+  --red-faint: rgba(208, 32, 46, .08);
+
+  --green: #0F6E52;
+  --green-vivid: #149C74;
+  --green-faint: rgba(15, 110, 82, .10);
+
+  --amber: #A9670F;
+  --amber-faint: rgba(169, 103, 15, .12);
+
+  --ink: #14171C;
+  --ink-soft: #4A5058;
+  --grey: #767C86;
+  --paper: #EEF1F4;
+  --card: #FFFFFF;
+  --rule: #DCE1E7;
+  --rule-strong: #C3CAD3;
+
+  --display: 'Archivo', system-ui, sans-serif;
+  --body: 'Source Sans 3', system-ui, sans-serif;
+  --data: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --rail: 52px;
+  --sheet-peek: 66px;
+  --shadow-sheet: 0 -4px 12px rgba(20, 23, 28, .06),
+                  0 -18px 44px -14px rgba(20, 23, 28, .26);
+}
+
+[data-theme="dark"] {
+  --red: #F0424F;
+  --red-faint: rgba(240, 66, 79, .12);
+  --green: #3DBE95;
+  --green-vivid: #35C79A;
+  --green-faint: rgba(61, 190, 149, .12);
+  --amber: #D9A040;
+  --amber-faint: rgba(217, 160, 64, .12);
+
+  --ink: #E9ECF1;
+  --ink-soft: #A6AEBA;
+  --grey: #8A929E;
+  --paper: #0D1015;
+  --card: #161A21;
+  --rule: #272D37;
+  --rule-strong: #39414E;
+  --shadow-sheet: 0 -4px 12px rgba(0, 0, 0, .4),
+                  0 -18px 44px -14px rgba(0, 0, 0, .6);
+}

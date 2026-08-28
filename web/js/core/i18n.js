@@ -5,28 +5,34 @@
  * and the dictionary decides the wording. Adding a language means adding
  * one JSON file under i18n/, nothing else.
  *
- * Locale resolution order: ?lang= → stored choice → browser → default.
+ * Spanish is the default, always. The browser language is deliberately not
+ * consulted: this verifier serves a Peruvian election, the tally sheet in the
+ * reader's hands is in Spanish, and a phone configured in English does not
+ * mean its owner wants an English ballot record. English is available, but
+ * as an explicit choice, and once made it survives reloads.
+ *
+ * Resolution order: ?lang= → stored choice → Spanish.
  */
 
 const SUPPORTED = ['es', 'en'];
+const DEFAULT_LOCALE = 'es';
 const STORAGE_KEY = 'onpe_locale';
 
 let dictionary = {};
 let locale = 'es';
 
-export function resolveLocale(fallback = 'es') {
+export function resolveLocale(fallback = DEFAULT_LOCALE) {
   const fromQuery = new URLSearchParams(location.search).get('lang');
   const stored = safeGet(STORAGE_KEY);
-  const fromBrowser = (navigator.language || '').slice(0, 2);
 
-  for (const candidate of [fromQuery, stored, fromBrowser, fallback]) {
+  for (const candidate of [fromQuery, stored, fallback]) {
     if (candidate && SUPPORTED.includes(candidate)) return candidate;
   }
-  return fallback;
+  return DEFAULT_LOCALE;
 }
 
 export async function load(requested) {
-  locale = SUPPORTED.includes(requested) ? requested : 'es';
+  locale = SUPPORTED.includes(requested) ? requested : DEFAULT_LOCALE;
   const response = await fetch(`i18n/${locale}.json`, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`Missing dictionary for locale "${locale}"`);
   dictionary = await response.json();

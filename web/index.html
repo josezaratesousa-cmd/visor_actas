@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verificador de actas — ONPE</title>
+<meta name="theme-color" content="#D0202E">
+<meta name="description" content="Verifique la autenticidad de un acta electoral registrada en blockchain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="screen">
+  <div class="flag"></div>
+
+  <header class="topbar">
+    <!-- PLACEHOLDER: replace with the official ONPE mark -->
+    <span class="brand">ONPE</span>
+    <div class="headline">
+      <div class="headline__station" id="station"></div>
+      <div class="headline__process" id="process"></div>
+    </div>
+    <div class="tools">
+      <button class="icon-btn" id="btn-lang" data-i18n-label="app.language"></button>
+      <button class="icon-btn" id="btn-theme" data-i18n-label="app.theme_dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btn-share" data-i18n-label="app.share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="canvas" id="canvas"></main>
+
+  <button class="rail" id="rail" data-i18n-label="verify.cta">
+    <span class="rail__pulse"></span>
+    <svg class="rail__shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2.5 4 6v6c0 4.6 3.2 8.4 8 9.5 4.8-1.1 8-4.9 8-9.5V6l-8-3.5Z"/><path d="m9 12 2 2 4-4"/>
+    </svg>
+    <span class="rail__label" id="rail-label"></span>
+  </button>
+
+  <div class="veil" id="veil"></div>
+
+  <section class="sheet" id="sheet-results">
+    <button class="sheet__handle" id="results-handle" aria-expanded="false">
+      <span class="sheet__grip"></span>
+      <span class="sheet__title" data-i18n="results.title"></span>
+      <span class="sheet__note" id="results-note"></span>
+      <span class="chev"></span>
+    </button>
+    <div class="sheet__body" id="results-body"></div>
+  </section>
+
+  <section class="sheet sheet--full" id="sheet-share">
+    <div class="sheet__handle">
+      <span class="sheet__grip"></span>
+      <span class="sheet__title" data-i18n="share.title"></span>
+      <button class="close" data-close="sheet-share">&#10005;</button>
+    </div>
+    <div class="sheet__body" id="share-body"></div>
+  </section>
+
+  <section class="sheet sheet--full" id="sheet-verify">
+    <div class="sheet__handle">
+      <span class="sheet__grip"></span>
+      <span class="sheet__title" data-i18n="verify.title"></span>
+      <button class="close" data-close="sheet-verify">&#10005;</button>
+    </div>
+    <div class="sheet__body" id="verify-body"></div>
+  </section>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

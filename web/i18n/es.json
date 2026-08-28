@@ -7,7 +7,8 @@
     "table": "Mesa",
     "share": "Compartir esta acta",
     "theme_dark": "Cambiar a modo oscuro",
-    "theme_light": "Cambiar a modo claro"
+    "theme_light": "Cambiar a modo claro",
+    "language": "Cambiar idioma"
   },
   "document": {
     "open": "Abrir el PDF",
@@ -46,7 +47,9 @@
     "timestamp": "Sello de tiempo",
     "location": "Dónde se instaló la mesa",
     "open_in_maps": "Abrir en Mapas",
-    "view_merkle": "Ver el árbol Merkle"
+    "view_merkle": "Ver el árbol Merkle",
+    "sealed": "Sellado",
+    "anchored": "Anclado"
   },
   "results": {
     "title": "Resultados",
@@ -85,5 +88,11 @@
   "errors": {
     "not_found": "No encontramos ningún acta con este código.",
     "unavailable": "El servicio no está disponible en este momento. Intente nuevamente en unos minutos."
+  },
+  "anchors": {
+    "ipfs": "Copia distribuida",
+    "lnet": "Sello de tiempo",
+    "rollux": "Anclaje público",
+    "stamping": "Generador de inmutabilidad"
   }
 }

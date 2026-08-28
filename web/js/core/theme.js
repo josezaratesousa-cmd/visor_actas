@@ -1,23 +1,25 @@
 /**
  * theme — light and dark mode.
  *
- * Order: stored choice → system preference. The system preference is
- * followed live only while the user has not chosen explicitly, so a
- * deliberate choice is never overridden by the OS switching at sunset.
+ * Light is the default, always. The system preference is deliberately not
+ * consulted: this is a public verifier whose screenshots get shared and
+ * compared, and a citizen showing a neighbour "look, it says authentic"
+ * should be showing the same screen. A deterministic default also matches
+ * the printed tally sheet the reader is holding.
+ *
+ * Dark mode stays available, but only as an explicit choice, and once made
+ * it survives reloads.
  */
 
 const STORAGE_KEY = 'onpe_theme';
 const THEMES = ['light', 'dark'];
+const DEFAULT = 'light';
 
 const META_COLOR = { light: '#D0202E', dark: '#0D1015' };
 
 export function init() {
   const stored = safeGet(STORAGE_KEY);
-  applyTheme(THEMES.includes(stored) ? stored : systemTheme());
-
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    if (!safeGet(STORAGE_KEY)) applyTheme(event.matches ? 'dark' : 'light');
-  });
+  applyTheme(THEMES.includes(stored) ? stored : DEFAULT);
 }
 
 export function toggle() {
@@ -28,7 +30,7 @@ export function toggle() {
 }
 
 export function current() {
-  return document.documentElement.dataset.theme || 'light';
+  return document.documentElement.dataset.theme || DEFAULT;
 }
 
 function applyTheme(theme) {
@@ -36,10 +38,6 @@ function applyTheme(theme) {
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', META_COLOR[theme]);
   document.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
-}
-
-function systemTheme() {
-  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function safeGet(key) {
