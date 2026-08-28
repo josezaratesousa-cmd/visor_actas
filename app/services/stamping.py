@@ -10,9 +10,10 @@ handling code still has no way to forge an attestation through it. The token
 this service uses can — and should — be one that only grants reads.
 
 The second rule is that the API token travels in a header, never in a query
-string. Stamping's own public viewer passes it as `?token=`, and that token
-now sits in plain text in the web server access logs, hundreds of times over.
-Not repeating that is much of the point of having a backend at all.
+string. Query strings are written to web server access logs in plain text
+and kept there through every rotation and backup, so a credential sent that
+way is a credential published to everyone who can read a log file. Keeping
+it out of the URL is much of the point of having a backend at all.
 """
 
 from __future__ import annotations
