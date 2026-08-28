@@ -1,37 +1,41 @@
 # Visor de actas electorales
 
-Public verifier for electoral tally sheets. A citizen scans the QR printed
-on the sheet, sees the document, and can check that it is identical to the
-one sealed in blockchain when the count closed.
+Verificador público de actas de escrutinio. El ciudadano escanea el código QR
+impreso en el acta, ve el documento, y puede comprobar que es idéntico al que
+se selló en blockchain cuando cerró el conteo.
 
-The viewer only reads. It holds no capability to register evidence: the
-class that talks to the attestation API refuses any HTTP method other than
-GET, so code reachable from a request has no path to forge an attestation.
-Registration is a separate operator tool that runs from a shell.
+**El visor solo lee.** No tiene capacidad de registrar evidencia: la clase que
+habla con el API de atestación rechaza cualquier método HTTP que no sea GET,
+así que el código alcanzable desde una petición no tiene camino para falsificar
+una atestación. El registro es una herramienta aparte que corre desde consola.
 
-- **Backend** FastAPI (Python 3.11). Holds the credentials; the browser
-  never sees an API token.
-- **Frontend** Vanilla HTML, CSS and ES modules. No framework, no build
-  step. What ships is what runs, which is also what an auditor reads.
-- **Integration guide** [`docs/integration-guide.es.md`](docs/integration-guide.es.md)
-  — what the electoral body must send for the viewer to work.
+- **Backend** FastAPI (Python 3.11). Guarda las credenciales; el navegador
+  nunca ve un token.
+- **Frontend** HTML, CSS y módulos ES a secas. Sin framework y sin compilación.
+  Lo que se despliega es lo que corre, que es también lo que lee un auditor.
+- **Guía de integración** [`docs/integration-guide.es.md`](docs/integration-guide.es.md)
+  — qué debe enviar la entidad electoral para que el visor funcione.
+
+> **Idiomas.** El código está en inglés: funciones, variables, directorios.
+> La documentación está en español, porque la leen personas y el proyecto es
+> para una entidad peruana. La interfaz es bilingüe (ver más abajo).
 
 ---
 
-## Requirements
+## Requisitos
 
 | | |
 |---|---|
-| Python | 3.11 or newer |
-| Reverse proxy | Any. Needs to forward to a local port |
-| Storage | A filesystem path or an S3-compatible bucket |
-| Outbound | HTTPS to the attestation API |
+| Python | 3.11 o superior |
+| Proxy inverso | Cualquiera. Debe reenviar a un puerto local |
+| Almacenamiento | Una ruta del sistema de archivos o un bucket S3 |
+| Salida | HTTPS hacia el API de atestación |
 
-No database. State lives in the attestation API and in custody storage.
+Sin base de datos. El estado vive en el API de atestación y en la custodia.
 
 ---
 
-## Install
+## Instalación
 
 ```bash
 git clone https://github.com/josezaratesousa-cmd/visor_actas.git
@@ -40,94 +44,94 @@ python3.11 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-## Configure
+## Configuración
 
-Configuration is read from a `.env` file that lives **outside the
-repository**. There is no default copy inside the project tree: a
-misconfigured deployment fails on start instead of running quietly with
-placeholder credentials.
+La configuración se lee de un archivo `.env` que vive **fuera del
+repositorio**. No hay copia por defecto dentro del árbol del proyecto: un
+despliegue mal configurado falla al arrancar, en lugar de correr en silencio
+con credenciales de relleno.
 
 ```bash
 sudo mkdir -p /etc/visor-actas
 sudo cp .env.example /etc/visor-actas/.env
 sudo chmod 600 /etc/visor-actas/.env
-sudo chown <service-user> /etc/visor-actas/.env
+sudo chown <usuario-del-servicio> /etc/visor-actas/.env
 export APP_ENV_FILE=/etc/visor-actas/.env
 ```
 
-Fill in `.env`. Every setting is documented there. The three that must be
-set before anything works:
+Complete el `.env`. Cada ajuste está documentado ahí. Los tres que deben estar
+puestos antes de que nada funcione:
 
-| Setting | What it is |
+| Ajuste | Qué es |
 |---|---|
-| `STAMPING_TOKEN` | Attestation API token. A read-only token is enough and is what should be used |
-| `CODE_CIPHER_KEY` | 32 bytes of hex. Deciphers the QR code parameter |
-| `CUSTODY_*` | Where the signed PDFs are. See below |
+| `STAMPING_TOKEN` | Token del API de atestación. Alcanza con uno de solo lectura, y es el que conviene usar |
+| `CODE_CIPHER_KEY` | 32 bytes en hexadecimal. Descifra el parámetro del código QR |
+| `CUSTODY_*` | Dónde están los PDF firmados. Ver más abajo |
 
-Generate a cipher key:
+Generar una clave de cifrado:
 
 ```bash
 .venv/bin/python -m app.services.code_cipher
 ```
 
-### Custody: the component you replace
+### Custodia: el componente que se reemplaza
 
-Where the PDFs live is the one seam a deployment is expected to move.
-Everything above it only knows that some object hands back the bytes of a
-tally sheet.
+Dónde viven los PDF es la única costura que un despliegue está pensado para
+mover. Todo lo que está por encima solo sabe que algún objeto le devuelve los
+bytes de un acta.
 
-Two drivers ship with the project:
+El proyecto trae dos drivers:
 
 ```ini
-CUSTODY_DRIVER=local          # reads <CUSTODY_PATH>/<identifier>.pdf
-CUSTODY_DRIVER=s3             # AWS or any S3-compatible service
+CUSTODY_DRIVER=local          # lee <CUSTODY_PATH>/<identificador>.pdf
+CUSTODY_DRIVER=s3             # AWS o cualquier servicio compatible con S3
 ```
 
-To use an internal document system instead, write one class and set one
-value. Nothing else changes:
+Para usar un sistema documental propio, se escribe una clase y se cambia un
+valor. Nada más cambia:
 
 ```python
 # app/services/custody/your_backend.py
 from app.services.custody import Document, register, safe_identifier
 
-@register("your-name")
+@register("nombre-propio")
 class YourBackend:
     def __init__(self, settings): ...
     async def fetch(self, identifier: str) -> Document: ...
     async def exists(self, identifier: str) -> bool: ...
 ```
 
-Import it in `app/services/custody/__init__.py` so the decorator runs, then
-set `CUSTODY_DRIVER=your-name`.
+Se importa en `app/services/custody/__init__.py` para que corra el decorador,
+y se pone `CUSTODY_DRIVER=nombre-propio`.
 
-Identifiers arrive from a deciphered QR code and are treated as hostile.
-Call `safe_identifier()` before touching storage: a driver that concatenates
-one into a path or a key without checking is one crafted code away from
-serving an arbitrary file.
+**Los identificadores llegan de un código QR descifrado y se tratan como
+entrada hostil.** Llame a `safe_identifier()` antes de tocar el
+almacenamiento: un driver que concatena uno en una ruta o una clave sin
+validar está a un código preparado de servir un archivo arbitrario.
 
-## Brand assets
+## Recursos de marca
 
-`web/assets/brand/logo-source.png` is the institutional mark. Everything
-else in that directory is generated from it:
+`web/assets/brand/logo-source.png` es el logotipo institucional. Todo lo demás
+en ese directorio se genera a partir de él:
 
 ```bash
 .venv/bin/python -m tools.build_brand
 ```
 
-Replacing the brand means replacing that one file and re-running.
-See [`web/assets/brand/README.md`](web/assets/brand/README.md).
+Cambiar la marca es reemplazar ese archivo y volver a correr el script.
+Ver [`web/assets/brand/README.md`](web/assets/brand/README.md).
 
 ---
 
-## Run
+## Ejecución
 
 ```bash
 APP_ENV_FILE=/etc/visor-actas/.env \
   .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8081
 ```
 
-Bind to localhost only and put a reverse proxy in front. The application
-does not terminate TLS and does not expect to face the internet directly.
+Escuche solo en localhost y ponga un proxy inverso delante. La aplicación no
+termina TLS ni espera dar a internet directamente.
 
 ### systemd
 
@@ -152,7 +156,7 @@ ReadWritePaths=/var/lib/visor-actas
 WantedBy=multi-user.target
 ```
 
-### Reverse proxy
+### Proxy inverso
 
 nginx:
 
@@ -165,7 +169,7 @@ location / {
 }
 ```
 
-Apache, with `mod_proxy` and `mod_proxy_http` enabled:
+Apache, con `mod_proxy` y `mod_proxy_http` habilitados:
 
 ```apache
 ProxyPreserveHost On
@@ -173,24 +177,23 @@ ProxyPass        / http://127.0.0.1:8081/
 ProxyPassReverse / http://127.0.0.1:8081/
 ```
 
-If the viewer is mounted under a subpath rather than at the root, set
-`APP_ROOT_PATH` to that prefix so generated URLs stay correct.
+Si el visor se monta bajo un subdirectorio en vez de la raíz, ponga ese
+prefijo en `APP_ROOT_PATH` para que las URL generadas sigan siendo correctas.
 
 ---
 
-## The QR code
+## El código QR
 
-The printed QR points at `https://<host>/<code>`. The code is deciphered
-server-side into an internal identifier.
+El QR impreso apunta a `https://<dominio>/<codigo>`. El código se descifra del
+lado servidor para obtener un identificador interno.
 
-**The code must not be the polling station number, nor derivable from it.**
-If it were, anyone could enumerate every tally sheet in the country by
-editing the URL. It must not be the hash or the transaction id either;
-both are public and reachable by other means.
+**El código no debe ser el número de mesa ni derivable de él.** Si lo fuera,
+cualquiera podría enumerar todas las actas del país modificando la URL.
+Tampoco debe ser el hash ni el trxid: los dos son públicos por otras vías.
 
-Codes are generated when the ballot material is produced, since the QR is
-printed on the sheet before the count. That makes it a logistics deadline,
-not a deployment task.
+Los códigos se generan cuando se produce el material electoral, porque el QR
+va impreso en el acta antes del escrutinio. Eso lo convierte en un plazo
+logístico, no en una tarea de despliegue.
 
 ```bash
 .venv/bin/python -c "
@@ -201,97 +204,100 @@ print(CodeCipher(get_settings().code_cipher_key).encode('EMC-2026/035253'))"
 
 ---
 
-## Registering test data
+## Datos de prueba
 
-The viewer cannot register. This tool can, and it is the only thing in the
-repository that writes to the attestation API.
+El visor no puede registrar. Esta herramienta sí, y es lo único en el
+repositorio que escribe en el API de atestación.
 
 ```bash
-# Build two synthetic tally sheets: one intact, one altered after hashing
+# Genera dos actas sintéticas: una íntegra y otra alterada después del hash
 .venv/bin/python -m tools.make_fixtures
 
-# Render its pages to WebP, which is what the viewer displays
+# Renderiza sus páginas a WebP, que es lo que muestra el visor
 .venv/bin/python -m tools.render_pages tests/fixtures/valid.pdf --out web/assets/sample
 
-# Register it
+# La registra
 .venv/bin/python -m tools.register_record tests/fixtures/valid.pdf \
     --results tests/fixtures/results.json \
     --data    tests/fixtures/data.json \
     --lat -12.0768 --long -77.0916
 ```
 
-Use `--dry-run` to build and validate the payload without sending it.
+Con `--dry-run` arma y valida el cuerpo sin enviar nada.
 
-**The order matters.** The hash must cover the final, already signed PDF,
-byte for byte, exactly as it will be stored and served. Hash first and sign
-afterwards and every sheet reports as altered. Section 3 of the integration
-guide explains why, and it is the most common way this integration fails.
+**El orden importa.** El hash debe cubrir el PDF final, ya firmado, byte por
+byte, tal como quedará almacenado y como se servirá. Si se calcula el hash
+antes de firmar, todas las actas se reportan como alteradas. La sección 3 de
+la guía de integración explica por qué, y es la forma más común en que esta
+integración falla.
 
-**Fixtures are synthetic.** A real tally sheet carries the names and
-identity numbers of the polling station members inside its PAdES signature,
-and this repository is public. Never commit a real one.
+**Las actas de prueba son sintéticas.** Un acta real lleva los nombres y
+documentos de identidad de los miembros de mesa dentro de su firma PAdES, y
+este repositorio es público. Nunca versione una real.
 
 ---
 
-## Tests
+## Pruebas
 
 ```bash
 .venv/bin/python -m pytest
 ```
 
-They cover the parts where a mistake is expensive: the three arithmetic
-balances a tally sheet must satisfy, the two different denominators used for
-percentages, path traversal and symlink escape in custody, and the QR code
-cipher including its rejection of non-canonical encodings.
+Cubren las partes donde un error sale caro: los tres cuadres aritméticos que
+debe satisfacer un acta, los dos denominadores distintos que se usan para los
+porcentajes, el escape de rutas y de enlaces simbólicos en la custodia, y el
+cifrado del código QR incluido su rechazo de codificaciones no canónicas.
 
 ---
 
-## Layout
+## Estructura
 
 ```
-app/                FastAPI backend
-  config.py         settings, read from the .env outside the tree
-  models.py         wire contract, validated on ingestion
-  routers/          HTTP endpoints
+app/                backend FastAPI
+  config.py         configuración, leída del .env externo
+  models.py         contrato de datos, validado en la ingesta
+  routers/          endpoints HTTP
   services/
-    stamping.py     read-only client for the attestation API
-    code_cipher.py  QR code, AES-256-GCM
-    custody/        storage drivers — the replaceable seam
-web/                frontend, served as static files
+    stamping.py     cliente de solo lectura del API de atestación
+    code_cipher.py  código QR, AES-256-GCM
+    custody/        drivers de almacenamiento — la costura reemplazable
+web/                frontend, servido como archivos estáticos
   index.html
-  css/              tokens.css holds the palette; nothing else hardcodes colour
-  js/core/          i18n, theme, network boundary, DOM helpers
-  js/views/         document, verification, results, share
-  i18n/             es.json and en.json, exact key parity
-  assets/brand/     institutional mark and generated icons
-tools/              operator scripts, never imported by the app
+  css/              tokens.css tiene la paleta; nada más fija un color
+  js/core/          i18n, tema, frontera de red, utilidades de DOM
+  js/views/         documento, verificación, resultados, compartir
+  i18n/             es.json y en.json, paridad exacta de claves
+  assets/brand/     logotipo institucional e iconos generados
+tools/              scripts de operador, nunca importados por la aplicación
 tests/
 docs/
 ```
 
-## Language and appearance
+## Idioma y apariencia
 
-Spanish and light are the defaults, and neither the browser language nor the
-system colour scheme is consulted. This is a public verifier whose
-screenshots get shared and compared: a citizen showing a neighbour "look, it
-says authentic" should be showing the same screen. English and dark remain
-available as explicit choices that survive reloads.
+**Español y modo claro son los valores por defecto**, y no se consulta ni el
+idioma del navegador ni el esquema de color del sistema. Este es un
+verificador público cuyas capturas se comparten y se comparan: un ciudadano
+que le muestra a su vecino "mirá, dice que es auténtica" tiene que estar
+mostrando la misma pantalla. Inglés y modo oscuro siguen disponibles como
+elección explícita, y una vez elegidos sobreviven a las recargas.
 
-No user-facing string is hardcoded in a view. Adding a language means adding
-one JSON file under `web/i18n/` and listing it in `web/js/core/i18n.js`.
+Ninguna cadena visible está escrita a mano en una vista. Agregar un idioma es
+agregar un archivo JSON en `web/i18n/` y listarlo en `web/js/core/i18n.js`.
 
-## Security notes
+## Notas de seguridad
 
-- Credentials live in a `.env` outside the repository, `chmod 600`. Nothing
-  in the tree points at a particular host or account.
-- The API token travels in a header. Query strings are written to access
-  logs in plain text and kept through every rotation and backup.
-- The application binds to localhost. TLS belongs to the reverse proxy.
-- The viewer is read-only by construction, not by policy.
-- PAdES validation and page rendering happen once, when a sheet is
-  registered, and the result is cached. Running signature cryptography per
-  request does not survive election-night traffic.
+- Las credenciales viven en un `.env` fuera del repositorio, `chmod 600`. Nada
+  en el árbol apunta a una máquina o una cuenta concreta.
+- El token viaja por cabecera. Las query strings quedan escritas en texto
+  plano en los logs de acceso y permanecen ahí a través de cada rotación y
+  cada respaldo.
+- La aplicación escucha en localhost. El TLS es del proxy inverso.
+- El visor es de solo lectura por construcción, no por política.
+- La validación PAdES y el renderizado de páginas ocurren una sola vez, al
+  registrar el acta, y el resultado se cachea. Correr criptografía de firmas
+  por petición no sobrevive al tráfico de una noche electoral.
 
-## Licence
+## Licencia
 
-To be defined with the contracting body.
+A definir con la entidad contratante.
