@@ -1,0 +1,89 @@
+{
+  "locale": "en",
+  "name": "English",
+  "app": {
+    "title": "Tally sheet verifier",
+    "organization": "National Office of Electoral Processes",
+    "table": "Polling station",
+    "share": "Share this tally sheet",
+    "theme_dark": "Switch to dark mode",
+    "theme_light": "Switch to light mode"
+  },
+  "document": {
+    "open": "Open the PDF",
+    "download": "Download",
+    "meta": "Signed PDF · {pages} pages · {size}",
+    "page_of": "Page {current} of {total}"
+  },
+  "verify": {
+    "cta": "Verify on blockchain",
+    "cta_done": "Sheet verified",
+    "cta_warning": "See finding",
+    "title": "Verification",
+    "step_hash": "Computing the PDF fingerprint",
+    "step_record": "Querying the sealed record",
+    "step_compare": "Comparing both fingerprints",
+    "step_signature": "Validating the digital signature",
+    "verdict_ok": "Authentic tally sheet",
+    "verdict_ok_detail": "The document you are viewing is identical to the one sealed during the count.",
+    "verdict_warning": "Check with the ODPE",
+    "verdict_warning_detail": "The fingerprint matches the record, but the digital signature does not cover the whole document.",
+    "axis_integrity": "Intact",
+    "axis_integrity_detail": "Its fingerprint matches the one sealed on blockchain",
+    "axis_signature": "Signed",
+    "axis_signature_detail": "Valid electronic signature from {count} signers",
+    "axis_signature_bad": "Invalid signature",
+    "axis_signature_bad_detail": "The signature does not cover the whole document",
+    "fingerprint": "Sheet fingerprint",
+    "signers": "Who signed it",
+    "signers_bad": "Signature status",
+    "issued_by": "Certificate issued by",
+    "coverage": "Signature coverage",
+    "coverage_revision": "{percent}% · revision {revision}",
+    "coverage_ok": "The signature covers the whole document. Nothing was added or changed after signing.",
+    "coverage_bad": "Content was added to the PDF after the last signature. The hatched portion is not covered by any signature.",
+    "registered_in": "Registered on",
+    "timestamp": "Timestamp",
+    "location": "Where the station was set up",
+    "open_in_maps": "Open in Maps",
+    "view_merkle": "View the Merkle tree"
+  },
+  "results": {
+    "title": "Results",
+    "votes": "{count} votes",
+    "voters": "Number of voters",
+    "valid": "Valid votes",
+    "null": "Void votes",
+    "blank": "Blank votes",
+    "turnout": "Turnout",
+    "turnout_of": "of {total}",
+    "heading": "Results",
+    "source": "Figures taken from the <b>info</b> field sealed with the tally sheet. They do not come from this page: they are the ones recorded at the time of the count."
+  },
+  "share": {
+    "title": "Share this tally sheet",
+    "note": "The verifier link is shared, not the file. Whoever receives it can check for themselves that the sheet is authentic.",
+    "message": "Tally sheet for polling station {table} — {process}. Verified on blockchain.",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "pending": {
+    "title": "Your tally sheet is still on its way",
+    "detail": "The code is correct. A tally sheet does not become verifiable as soon as the count ends: it goes through several stages first.",
+    "retry": "Check again",
+    "footer": "Save this link or scan the same code again whenever you like. The sheet will appear here as soon as it is registered.",
+    "stage_count": "In progress",
+    "stage_todo": "Pending",
+    "stages": [
+      "Count at the polling station",
+      "Reception at the ODPE",
+      "Digitisation and digital signing",
+      "Sealing and blockchain registration",
+      "Available for verification"
+    ]
+  },
+  "errors": {
+    "not_found": "We could not find any tally sheet with this code.",
+    "unavailable": "The service is unavailable right now. Please try again in a few minutes."
+  }
+}

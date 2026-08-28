@@ -1,0 +1,89 @@
+{
+  "locale": "es",
+  "name": "Español",
+  "app": {
+    "title": "Verificador de actas",
+    "organization": "Oficina Nacional de Procesos Electorales",
+    "table": "Mesa",
+    "share": "Compartir esta acta",
+    "theme_dark": "Cambiar a modo oscuro",
+    "theme_light": "Cambiar a modo claro"
+  },
+  "document": {
+    "open": "Abrir el PDF",
+    "download": "Descargar",
+    "meta": "PDF firmado · {pages} páginas · {size}",
+    "page_of": "Página {current} de {total}"
+  },
+  "verify": {
+    "cta": "Verificar con blockchain",
+    "cta_done": "Acta verificada",
+    "cta_warning": "Ver observación",
+    "title": "Verificación",
+    "step_hash": "Calculando la huella del PDF",
+    "step_record": "Consultando el registro sellado",
+    "step_compare": "Comparando ambas huellas",
+    "step_signature": "Validando la firma digital",
+    "verdict_ok": "Acta auténtica",
+    "verdict_ok_detail": "El documento que está viendo es idéntico al que se selló durante el escrutinio.",
+    "verdict_warning": "Revisar con la ODPE",
+    "verdict_warning_detail": "La huella coincide con el registro, pero la firma digital no cubre todo el documento.",
+    "axis_integrity": "Íntegra",
+    "axis_integrity_detail": "Su huella coincide con la sellada en blockchain",
+    "axis_signature": "Firmada",
+    "axis_signature_detail": "Firma electrónica válida de {count} firmantes",
+    "axis_signature_bad": "Firma no válida",
+    "axis_signature_bad_detail": "La firma no ampara el documento completo",
+    "fingerprint": "Huella del acta",
+    "signers": "Quién la firmó",
+    "signers_bad": "Estado de la firma",
+    "issued_by": "Certificado emitido por",
+    "coverage": "Alcance de la firma",
+    "coverage_revision": "{percent}% · revisión {revision}",
+    "coverage_ok": "La firma cubre el documento completo. No se agregó ni modificó nada después de firmarlo.",
+    "coverage_bad": "Se agregó contenido al PDF después de la última firma. La parte rayada no está amparada por ninguna firma.",
+    "registered_in": "Registrada en",
+    "timestamp": "Sello de tiempo",
+    "location": "Dónde se instaló la mesa",
+    "open_in_maps": "Abrir en Mapas",
+    "view_merkle": "Ver el árbol Merkle"
+  },
+  "results": {
+    "title": "Resultados",
+    "votes": "{count} votos",
+    "voters": "Cantidad de votantes",
+    "valid": "Votos válidos",
+    "null": "Votos nulos",
+    "blank": "Votos en blanco",
+    "turnout": "Participación",
+    "turnout_of": "de {total}",
+    "heading": "Resultados",
+    "source": "Cifras tomadas del campo <b>info</b> sellado junto al acta. No provienen de esta página: son las que quedaron registradas al momento del escrutinio."
+  },
+  "share": {
+    "title": "Compartir esta acta",
+    "note": "Se comparte el enlace al verificador, no el archivo. Quien lo reciba podrá comprobar por su cuenta que el acta es auténtica.",
+    "message": "Acta de escrutinio de la Mesa {table} — {process}. Verificada en blockchain.",
+    "copy": "Copiar",
+    "copied": "Copiado"
+  },
+  "pending": {
+    "title": "Su acta todavía está en camino",
+    "detail": "El código es correcto. Lo que ocurre es que un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
+    "retry": "Consultar de nuevo",
+    "footer": "Guarde este enlace o vuelva a escanear el mismo código cuando quiera. El acta aparecerá aquí en cuanto quede registrada.",
+    "stage_count": "En curso",
+    "stage_todo": "Pendiente",
+    "stages": [
+      "Escrutinio en la mesa",
+      "Recepción en la ODPE",
+      "Digitalización y firma digital",
+      "Sellado y registro en blockchain",
+      "Disponible para verificar"
+    ]
+  },
+  "errors": {
+    "not_found": "No encontramos ningún acta con este código.",
+    "unavailable": "El servicio no está disponible en este momento. Intente nuevamente en unos minutos."
+  }
+}
