@@ -200,6 +200,13 @@ def _utc(value: Any) -> str | None:
 def _anchors(block, mainnet, integrity, result) -> list[dict[str, Any]]:
     """Only anchors that actually exist.
 
+    The four are fixed and listed here on purpose. IPFS, LACChain, Rollux and
+    the Merkle root are the anchors the platform writes, and the chain ids are
+    properties of those networks, not settings: they cannot change without the
+    platform changing. A catalogue file would add a moving part to hold values
+    that do not move. The response carries other network fields - polygon,
+    celo, bsc and so on - which stay empty and are deliberately ignored.
+
     The obvious fields are the wrong ones: integrity.tx_lacchain holds "0x"
     and integrity.infocid is empty even on a fully anchored record. An anchor
     whose value is absent is omitted rather than shown with a placeholder —
