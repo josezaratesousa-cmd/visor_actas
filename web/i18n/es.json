@@ -51,11 +51,11 @@
     "sealed": "Sellado",
     "anchored": "Anclado",
     "axis_signature_none": "Sin firma digital",
-    "axis_signature_none_detail": "Este documento no lleva firma electronica",
+    "axis_signature_none_detail": "Este documento no lleva firma electrónica",
     "verdict_unsigned": "Integridad confirmada",
-    "verdict_unsigned_detail": "Coincide con lo sellado en blockchain. No lleva firma electronica.",
+    "verdict_unsigned_detail": "Coincide con lo sellado en blockchain. No lleva firma electrónica.",
     "signers_none": "Firma digital",
-    "no_signature": "El documento no contiene ninguna firma electronica, por lo que no hay firmante que mostrar.",
+    "no_signature": "El documento no contiene ninguna firma electrónica, por lo que no hay firmante que mostrar.",
     "cta_unsigned": "Integridad OK"
   },
   "results": {
@@ -78,9 +78,9 @@
     "copied": "Copiado"
   },
   "pending": {
-    "title": "Su acta todavia esta en camino",
+    "title": "Su acta todavía está en camino",
     "detail": "El código es correcto. Lo que ocurre es que un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
-    "retry": "Guarde este enlace o vuelva a escanear el mismo codigo mas tarde. El acta aparecera aqui en cuanto quede registrada.",
+    "retry": "Guarde este enlace o vuelva a escanear el mismo código más tarde. El acta aparecerá aquí en cuanto quede registrada.",
     "footer": "Guarde este enlace o vuelva a escanear el mismo código cuando quiera. El acta aparecerá aquí en cuanto quede registrada.",
     "stage_count": "En curso",
     "stage_todo": "Pendiente",
@@ -91,17 +91,17 @@
       "Sellado y registro en blockchain",
       "Disponible para verificar"
     ],
-    "body": "El codigo es correcto. Un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
+    "body": "El código es correcto. Un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
     "step_count": "Escrutinio en la mesa",
-    "step_receive": "Recepcion en la oficina descentralizada",
-    "step_sign": "Digitalizacion y firma digital",
+    "step_receive": "Recepción en la oficina descentralizada",
+    "step_sign": "Digitalización y firma digital",
     "step_seal": "Sellado y registro en blockchain",
     "step_ready": "Disponible para verificar"
   },
   "errors": {
-    "not_found": "No encontramos ningun acta con ese codigo.",
+    "not_found": "No encontramos ningún acta con ese código.",
     "unavailable": "El servicio no está disponible en este momento. Intente nuevamente en unos minutos.",
-    "no_code": "Escanee el codigo QR impreso en el acta para consultarla."
+    "no_code": "Escanee el código QR impreso en el acta para consultarla."
   },
   "anchors": {
     "ipfs": "Copia distribuida",
@@ -111,15 +111,15 @@
   },
   "state": {
     "not_found_title": "No encontramos esta acta",
-    "not_found_lead": "El codigo del enlace no corresponde a ninguna acta registrada.",
-    "not_found_note_typo": "Si escribio la direccion a mano, vuelva a escanear el codigo QR: un solo caracter distinto lo invalida.",
-    "not_found_note_damaged": "Si el codigo impreso esta roto o borroso, la camara puede haber leido mal. Intente de nuevo con mejor luz.",
-    "not_found_note_pending": "Si acaba de terminar el escrutinio, es posible que el acta todavia no este publicada. Vuelva a intentarlo mas tarde.",
-    "no_code_title": "Escanee el codigo de un acta",
-    "no_code_lead": "Esta pagina muestra un acta electoral concreta y necesita saber cual.",
-    "no_code_note_where": "El codigo QR esta impreso en el acta de escrutinio. Apunte con la camara de su telefono y abra el enlace que aparece.",
+    "not_found_lead": "El código del enlace no corresponde a ninguna acta registrada.",
+    "not_found_note_typo": "Si escribió la dirección a mano, vuelva a escanear el código QR: un solo carácter distinto lo invalida.",
+    "not_found_note_damaged": "Si el código impreso está roto o borroso, la cámara puede haberlo leído mal. Inténtelo de nuevo con mejor luz.",
+    "not_found_note_pending": "Si el escrutinio acaba de terminar, es posible que el acta todavía no esté publicada. Vuelva a intentarlo más tarde.",
+    "no_code_title": "Escanee el código de un acta",
+    "no_code_lead": "Esta página muestra un acta electoral concreta y necesita saber cuál.",
+    "no_code_note_where": "El código QR está impreso en el acta de escrutinio. Apunte con la cámara de su teléfono y abra el enlace que aparece.",
     "unavailable_title": "No pudimos consultar el acta",
-    "unavailable_lead": "El servicio de verificacion no respondio. El acta no tiene ningun problema: el que falla es el sistema que la consulta.",
-    "unavailable_note": "Vuelva a intentarlo en unos minutos. Si el problema sigue, el enlace seguira siendo valido mas tarde."
+    "unavailable_lead": "El servicio de verificación no respondió. El acta no tiene ningún problema: el que falla es el sistema que la consulta.",
+    "unavailable_note": "Vuelva a intentarlo en unos minutos. El enlace seguirá siendo válido más tarde."
   }
 }

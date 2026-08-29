@@ -22,6 +22,13 @@ async function boot() {
   await i18n.load(i18n.resolveLocale('es'));
   i18n.apply();
 
+  // Antes de cualquier salida temprana: los controles de idioma y tema
+  // valen en todas las pantallas, y en las de estado mas que en ninguna
+  // -si el acta no aparece, poder leer el motivo en el propio idioma es
+  // justo lo que hace falta.
+  $('#btn-lang').textContent = i18n.current().toUpperCase();
+  wireChrome();
+
   const code = currentCode();
   if (!code) { showState('no_code'); return; }
 
@@ -34,7 +41,6 @@ async function boot() {
   $('#station').textContent = `${i18n.t('app.table')} ${record.station}`;
   $('#process').textContent = record.process.name;
   $('#rail-label').textContent = i18n.t('verify.cta');
-  $('#btn-lang').textContent = i18n.current().toUpperCase();
   $('#results-note').textContent = i18n.t('results.votes', { count: record.results.voters });
 
   documentView.render($('#canvas'), record);
@@ -57,6 +63,17 @@ function closeSheets() {
   $('#veil').dataset.on = '0';
 }
 
+/** Controls that belong to every screen. */
+function wireChrome() {
+  $('#btn-theme').addEventListener('click', () => theme.toggle());
+  $('#btn-lang').addEventListener('click', () => {
+    const available = i18n.locales();
+    const next = available[(available.indexOf(i18n.current()) + 1) % available.length];
+    i18n.setLocale(next);
+  });
+}
+
+/** Controls that only make sense once a sheet is on screen. */
 function wire() {
   $('#veil').addEventListener('click', closeSheets);
   document.querySelectorAll('[data-close]').forEach(button =>
@@ -92,13 +109,6 @@ function wire() {
   $('#btn-share').addEventListener('click', () =>
     share.share(state.record, () => openSheet('sheet-share')));
 
-  $('#btn-theme').addEventListener('click', () => theme.toggle());
-
-  $('#btn-lang').addEventListener('click', () => {
-    const locales = i18n.locales();
-    const next = locales[(locales.indexOf(i18n.current()) + 1) % locales.length];
-    i18n.setLocale(next);
-  });
 }
 
 /** Hand the whole screen over to a state page. */
