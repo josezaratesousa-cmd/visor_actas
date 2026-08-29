@@ -47,24 +47,35 @@ export async function run(target, record, { instant = false } = {}) {
   steps[2].dataset.state = 'done'; steps[3].dataset.state = 'busy';
   await wait(900);
   steps[3].querySelector('[data-detail]').textContent =
-    `${record.signature.profile} · ${record.signature.signers.length}`;
+    record.signature.status === 'unsigned' ? t('verify.axis_signature_none') : `${record.signature.profile} · ${record.signature.signers.length}`;
   steps[3].dataset.state = 'done';
 
   renderVerdict(target.querySelector('#verdict'), record);
 }
 
 function renderVerdict(node, record) {
-  const ok = record.signature.valid;
+  // Three states, not two. "unsigned" is a legitimate outcome: the sheet is
+  // intact but carries no electronic signature. Folding it into "valid" would
+  // invent the one thing this product exists to prove; folding it into
+  // "invalid" would accuse a document that is fine.
+  const state = record.signature.status
+    || (record.signature.valid ? 'valid' : 'invalid');
+  const ok = state === 'valid';
+  const unsigned = state === 'unsigned';
   const a = record.attestation;
 
   node.innerHTML = `
-    <div class="seal" data-bad="${ok ? 0 : 1}">
+    <div class="seal" data-bad="${state === 'invalid' ? 1 : 0}">
       <svg class="seal__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2.5 4 6v6c0 4.6 3.2 8.4 8 9.5 4.8-1.1 8-4.9 8-9.5V6l-8-3.5Z"/><path d="m9 12 2 2 4-4"/>
       </svg>
       <div>
-        <div class="seal__title">${esc(t(ok ? 'verify.verdict_ok' : 'verify.verdict_warning'))}</div>
-        <div class="seal__detail">${esc(t(ok ? 'verify.verdict_ok_detail' : 'verify.verdict_warning_detail'))}</div>
+        <div class="seal__title">${esc(t(
+          ok ? 'verify.verdict_ok'
+             : unsigned ? 'verify.verdict_unsigned' : 'verify.verdict_warning'))}</div>
+        <div class="seal__detail">${esc(t(
+          ok ? 'verify.verdict_ok_detail'
+             : unsigned ? 'verify.verdict_unsigned_detail' : 'verify.verdict_warning_detail'))}</div>
       </div>
     </div>
 
@@ -74,12 +85,16 @@ function renderVerdict(node, record) {
         <span><b>${esc(t('verify.axis_integrity'))}</b>
           <span>${esc(t('verify.axis_integrity_detail'))}</span></span>
       </div>
-      <div class="axis" data-bad="${ok ? 0 : 1}">
+      <div class="axis" data-bad="${state === 'invalid' ? 1 : 0}"
+           data-neutral="${unsigned ? 1 : 0}">
         <span class="axis__dot"></span>
-        <span><b>${esc(t(ok ? 'verify.axis_signature' : 'verify.axis_signature_bad'))}</b>
-          <span>${esc(ok
-            ? t('verify.axis_signature_detail', { count: record.signature.signers.length })
-            : t('verify.axis_signature_bad_detail'))}</span></span>
+        <span><b>${esc(t(
+            ok ? 'verify.axis_signature'
+               : unsigned ? 'verify.axis_signature_none' : 'verify.axis_signature_bad'))}</b>
+          <span>${esc(
+            ok ? t('verify.axis_signature_detail', { count: record.signature.signers.length })
+               : unsigned ? t('verify.axis_signature_none_detail')
+               : t('verify.axis_signature_bad_detail'))}</span></span>
       </div>
     </div>
 
@@ -88,7 +103,9 @@ function renderVerdict(node, record) {
          aria-label="${esc(t('verify.fingerprint'))}"></div>
     <div class="print__hex">${esc(a.evidence)}</div>
 
-    <div class="rubric">${esc(t(ok ? 'verify.signers' : 'verify.signers_bad'))}</div>
+    <div class="rubric">${esc(t(
+      ok ? 'verify.signers' : unsigned ? 'verify.signers_none' : 'verify.signers_bad'))}</div>
+    ${unsigned ? `<p class="provenance">${esc(t('verify.no_signature'))}</p>` : ''}
     ${record.signature.signers.map(signer => `
       <div class="anchor">
         <div class="anchor__badge" style="background:var(--green-faint);color:var(--green)">${PEN}</div>

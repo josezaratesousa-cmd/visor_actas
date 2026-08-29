@@ -154,6 +154,9 @@ a { color: inherit; }
   flex-shrink: 0; margin-top: 5px; box-shadow: 0 0 0 3px var(--green-faint); }
 .axis[data-bad="1"] .axis__dot { background: var(--red); box-shadow: 0 0 0 3px var(--red-faint); }
 .axis[data-bad="1"] b { color: var(--red); }
+/* Unsigned is neither pass nor fail: grey says "nothing to report here". */
+.axis[data-neutral="1"] .axis__dot { background: var(--grey);
+  box-shadow: 0 0 0 3px var(--rule); }
 .axis b { font-size: 13.5px; display: block; }
 .axis span { font-size: 12px; color: var(--ink-soft); line-height: 1.35; }
 

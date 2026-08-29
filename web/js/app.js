@@ -74,8 +74,12 @@ function wire() {
     state.verified = true;
     await verification.run($('#verify-body'), state.record);
     $('#rail').dataset.done = '1';
+    const status = state.record.signature.status
+      || (state.record.signature.valid ? 'valid' : 'invalid');
     $('#rail-label').textContent = i18n.t(
-      state.record.signature.valid ? 'verify.cta_done' : 'verify.cta_warning');
+      status === 'valid' ? 'verify.cta_done'
+      : status === 'unsigned' ? 'verify.cta_unsigned'
+      : 'verify.cta_warning');
   });
 
   $('#btn-share').addEventListener('click', () =>

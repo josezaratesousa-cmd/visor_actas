@@ -49,7 +49,14 @@
     "open_in_maps": "Abrir en Mapas",
     "view_merkle": "Ver el árbol Merkle",
     "sealed": "Sellado",
-    "anchored": "Anclado"
+    "anchored": "Anclado",
+    "axis_signature_none": "Sin firma digital",
+    "axis_signature_none_detail": "Este documento no lleva firma electronica",
+    "verdict_unsigned": "Integridad confirmada",
+    "verdict_unsigned_detail": "Coincide con lo sellado en blockchain. No lleva firma electronica.",
+    "signers_none": "Firma digital",
+    "no_signature": "El documento no contiene ninguna firma electronica, por lo que no hay firmante que mostrar.",
+    "cta_unsigned": "Integridad OK"
   },
   "results": {
     "title": "Resultados",

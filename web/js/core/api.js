@@ -1,10 +1,35 @@
 /**
  * Network boundary.
  *
- * The frontend never talks to Stamping and never sees an API token: it asks
- * this backend, which holds the credentials. While the HTTP layer is being
- * built, FIXTURE stands in for the response, shaped exactly like the real
- * contract so swapping in fetch() changes nothing above this file.
+ * The frontend never talks to the attestation API and never sees a token:
+ * it asks this backend, which holds the credentials.
+ *
+ * While the HTTP layer is being built, FIXTURE stands in for the response.
+ * Every value in it was read from a real attestation of the tally sheet in
+ * tests/fixtures/valid.pdf — nothing is invented. In a product whose whole
+ * claim is authenticity, a plausible-looking placeholder hash is worse than
+ * an obviously empty field: someone copies it into a block explorer, finds
+ * nothing, and the next question is not about the fixture.
+ *
+ * WHERE EACH FIELD COMES FROM in GET /stamp/get/?byTrxid=…
+ * The obvious-looking fields are not the right ones. `integrity.tx_lacchain`
+ * holds "0x" and `integrity.infocid` is empty even on a fully anchored
+ * record; the real anchors live under `networks` and `block`.
+ *
+ *   evidence      result.integrity.evidence
+ *   subject       result.integrity.subject
+ *   process code  result.integrity.transactionType
+ *   results       result.integrity.info            (base64 JSON)
+ *   identity      result.integrity.data            (base64 JSON)
+ *   coordinates   result.ownership.lat / .long
+ *   IPFS          result.block.ipfs                NOT integrity.infocid
+ *   LACChain      result.networks.mainnet.lacchain NOT integrity.tx_lacchain
+ *   Rollux        result.networks.mainnet.rollux   NOT integrity.tx_rollux
+ *   merkle root   result.block.hashblock
+ *   block number  result.block.number
+ *   sealed        result.existence.timestamp       (epoch ms)
+ *   anchored      result.existence.anchored
+ *   anchor state  result.blockchains.recipient     ("anchored" when complete)
  */
 
 const FIXTURE = {
@@ -20,40 +45,37 @@ const FIXTURE = {
   attestation: {
     evidence: '33abfeafad34c92bb81577d360e94dc16c8f23f0cf2d035dd9d1480adff6b40e',
     trx_id: '9e6f935c4a734ca07609269d43b7c70e6af22638',
-    sealed_at: '2026-08-28 21:34:02 UTC',
-    anchored_at: '2026-08-28 21:36:18 UTC',
-    block_number: '1 482 907',
+    sealed_at: '2026-08-29 01:41:19 UTC',
+    anchored_at: '2026-08-28 21:40:54 UTC',
+    block_number: '554324',
     anchors: [
       { key: 'IPFS', label_key: 'anchors.ipfs', network: 'InterPlanetary File System',
-        value: 'bafybeigd7rkzmqf4xn2vhy6cw3plu5ktjs8oa9dnr2xewb4mfq7ch1yvzk',
-        url: 'https://ipfs.io/ipfs/bafybeigd7rkzmqf4xn2vhy6cw3plu5ktjs8oa9dnr2xewb4mfq7ch1yvzk',
+        value: 'QmNd2Ha6fA79F6QoyTofatmBPGsnNouJPNLLnKBTjr9Vve',
+        url: 'https://ipfs.io/ipfs/QmNd2Ha6fA79F6QoyTofatmBPGsnNouJPNLLnKBTjr9Vve',
         logo: 'assets/networks/ipfs.svg' },
       { key: 'LNET', label_key: 'anchors.lnet', network: 'LACChain · chainId 648541',
-        value: '0x7f3ac9d2e814b06592cd7a1e4f80b3652ade9c17d40f8b2e6539ac81fd0742b9',
-        url: 'https://explorer.lacnet.com/tx/0x7f3ac9d2e814b06592cd7a1e4f80b3652ade9c17d40f8b2e6539ac81fd0742b9',
-        logo: 'https://stamping.io/admin/img/lacchain-grid.png' },
+        value: '0xf019e88fdc318020f2a56e2e0344598b98ff89943b20336e4a335dd8f4b51cc9',
+        url: 'https://explorer.lacnet.com/tx/0xf019e88fdc318020f2a56e2e0344598b98ff89943b20336e4a335dd8f4b51cc9',
+        logo: 'assets/networks/lacchain.png' },
       { key: 'RLX', label_key: 'anchors.rollux', network: 'Rollux · chainId 570',
-        value: '0x2e91cb45a70df836195c2ad8be403f7169dc582a4e0b91735fc6de2408ab7159',
-        url: 'https://explorer.rollux.com/tx/0x2e91cb45a70df836195c2ad8be403f7169dc582a4e0b91735fc6de2408ab7159',
-        logo: 'https://stamping.io/admin/img/1087373765014454322_kg0Q8IQiPB8b.png' },
+        value: '0x4ad31a561f7848c9a03dedf45697ff34fef54f1dcd131a4a4365f07988bbd851',
+        url: 'https://explorer.rollux.com/tx/0x4ad31a561f7848c9a03dedf45697ff34fef54f1dcd131a4a4365f07988bbd851',
+        logo: 'assets/networks/rollux.png' },
       { key: 'STP', label_key: 'anchors.stamping', network: 'Stamping.io · Merkle tree',
-        value: 'c4a71e93f0b285d61a4e7c8b3f902da5e618b7c04df29a3e5187b60c2fa4e9d1',
+        value: '33abfeafad34c92bb81577d360e94dc16c8f23f0cf2d035dd9d1480adff6b40e',
         url: 'https://stamping.io/es/view/?9e6f935c4a734ca07609269d43b7c70e6af22638',
-        logo: 'https://stamping.io/img/favicon.ico',
+        logo: 'assets/networks/stamping.ico',
         action_key: 'verify.view_merkle', is_root: true }
     ]
   },
-  signature: {
-    valid: true, profile: 'PAdES-LTA', coverage: 100, revision: '1 de 1',
-    signers: [
-      { name: 'ONPE — Oficina Nacional de Procesos Electorales',
-        id: 'RUC 20XXXXXXXXX', role: 'Digitalización y custodia del acta',
-        authority: 'UANATACA S.A.',
-        authority_kind: 'Prestador cualificado de servicios de confianza',
-        signed_at: '2026-08-28 21:30:11 UTC',
-        badges: ['Sello de tiempo cualificado', 'Validable a largo plazo', 'Certificado vigente'] }
-    ]
-  },
+  /**
+   * The test sheet is generated by tools/make_fixtures.py and carries no
+   * digital signature: there is no /ByteRange in the file. So the signature
+   * axis reports "unsigned", which is a legitimate state the viewer has to
+   * be able to show. Claiming a valid PAdES-LTA here would be inventing the
+   * one thing this product exists to prove.
+   */
+  signature: { status: 'unsigned', signers: [] },
   location: {
     venue: 'I.E. 1120 Pedro A. Labarthe', district: 'San Miguel',
     province: 'Lima', ubigeo: '150132', latitude: -12.0768, longitude: -77.0916
