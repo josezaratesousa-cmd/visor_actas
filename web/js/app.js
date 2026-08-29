@@ -8,7 +8,7 @@
 import { $ } from './core/dom.js';
 import * as i18n from './core/i18n.js';
 import * as theme from './core/theme.js';
-import { fetchRecord, currentCode } from './core/api.js';
+import { fetchRecord, currentCode, RecordUnavailable } from './core/api.js';
 import * as documentView from './views/document.js';
 import * as results from './views/results.js';
 import * as verification from './views/verification.js';
@@ -21,8 +21,14 @@ async function boot() {
   await i18n.load(i18n.resolveLocale('es'));
   i18n.apply();
 
-  state.record = await fetchRecord(currentCode());
+  const code = currentCode();
+  if (!code) { showMessage('errors.no_code'); return; }
+
+  state.record = await fetchRecord(code);
   const record = state.record;
+
+  // A sheet still in transit has no document and no attestation to show.
+  if (record.status === 'pending') { showPending(record); return; }
 
   $('#station').textContent = `${i18n.t('app.table')} ${record.station}`;
   $('#process').textContent = record.process.name;
@@ -94,8 +100,33 @@ function wire() {
   });
 }
 
+function showMessage(key) {
+  $('#rail').hidden = true;
+  document.querySelectorAll('.sheet').forEach(s => { s.hidden = true; });
+  $('#canvas').innerHTML = `<p class="provenance">${i18n.t(key)}</p>`;
+}
+
+/** The sheet exists but is not verifiable yet: say where it is, not "error". */
+function showPending(record) {
+  $('#station').textContent = i18n.t('pending.title');
+  $('#process').textContent = '';
+  $('#rail').hidden = true;
+  document.querySelectorAll('.sheet').forEach(s => { s.hidden = true; });
+  $('#canvas').innerHTML = `
+    <div class="pending">
+      <h1 class="pending__title">${i18n.t('pending.title')}</h1>
+      <p class="pending__text">${i18n.t('pending.body')}</p>
+      <ol class="pending__steps">
+        ${['pending.step_count', 'pending.step_receive', 'pending.step_sign',
+           'pending.step_seal', 'pending.step_ready']
+          .map(k => `<li>${i18n.t(k)}</li>`).join('')}
+      </ol>
+      <p class="provenance">${i18n.t('pending.retry')}</p>
+    </div>`;
+}
+
 boot().catch(error => {
   console.error(error);
-  $('#canvas').innerHTML =
-    `<p class="provenance">${i18n.t('errors.unavailable')}</p>`;
+  showMessage(error instanceof RecordUnavailable
+    ? 'errors.not_found' : 'errors.unavailable');
 });

@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     code_cipher_key: str = Field(default="", repr=False)
     cache_path: Path = Path("/tmp/custody/cache")
+    external_key_prefix: str = "ONPE"
 
     @property
     def is_production(self) -> bool:

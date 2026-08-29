@@ -81,7 +81,21 @@ class StampingClient:
         return await self._get({"byHash": evidence})
 
     async def get_by_external_key(self, external_key: str) -> dict[str, Any]:
-        """Fetch by ONPE's own identifier. Requires a valid token."""
+        """Fetch by the entity's own identifier.
+
+        NOT USED by the viewer, and the reason is worth recording. This lookup
+        needs authentication, but the query endpoint reads its parameters only
+        from $_GET and $_REQUEST: it never inspects a header. Authenticating to
+        it therefore means putting the token in the query string, where the web
+        server writes it to the access log in plain text and keeps it through
+        every rotation and backup.
+
+        Trading a permanently logged credential for a nicer lookup is a bad
+        exchange, so the viewer uses the public by-hash route instead and pays
+        for it in RecordService, which has to tell "not registered" apart from
+        "altered" by other means. Once the query endpoint accepts a header,
+        this becomes the better path.
+        """
         return await self._get({"byExternalKey": external_key})
 
     async def _get(self, params: dict[str, str]) -> dict[str, Any]:

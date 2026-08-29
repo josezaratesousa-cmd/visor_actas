@@ -78,9 +78,9 @@
     "copied": "Copiado"
   },
   "pending": {
-    "title": "Su acta todavía está en camino",
+    "title": "Su acta todavia esta en camino",
     "detail": "El código es correcto. Lo que ocurre es que un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
-    "retry": "Consultar de nuevo",
+    "retry": "Guarde este enlace o vuelva a escanear el mismo codigo mas tarde. El acta aparecera aqui en cuanto quede registrada.",
     "footer": "Guarde este enlace o vuelva a escanear el mismo código cuando quiera. El acta aparecerá aquí en cuanto quede registrada.",
     "stage_count": "En curso",
     "stage_todo": "Pendiente",
@@ -90,11 +90,18 @@
       "Digitalización y firma digital",
       "Sellado y registro en blockchain",
       "Disponible para verificar"
-    ]
+    ],
+    "body": "El codigo es correcto. Un acta no queda verificable apenas termina el escrutinio: antes recorre varias etapas.",
+    "step_count": "Escrutinio en la mesa",
+    "step_receive": "Recepcion en la oficina descentralizada",
+    "step_sign": "Digitalizacion y firma digital",
+    "step_seal": "Sellado y registro en blockchain",
+    "step_ready": "Disponible para verificar"
   },
   "errors": {
-    "not_found": "No encontramos ningún acta con este código.",
-    "unavailable": "El servicio no está disponible en este momento. Intente nuevamente en unos minutos."
+    "not_found": "No encontramos ningun acta con ese codigo.",
+    "unavailable": "El servicio no está disponible en este momento. Intente nuevamente en unos minutos.",
+    "no_code": "Escanee el codigo QR impreso en el acta para consultarla."
   },
   "anchors": {
     "ipfs": "Copia distribuida",

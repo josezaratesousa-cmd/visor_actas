@@ -80,7 +80,7 @@
   "pending": {
     "title": "Your tally sheet is still on its way",
     "detail": "The code is correct. A tally sheet does not become verifiable as soon as the count ends: it goes through several stages first.",
-    "retry": "Check again",
+    "retry": "Save this link or scan the same code again later. The sheet will appear here once it is registered.",
     "footer": "Save this link or scan the same code again whenever you like. The sheet will appear here as soon as it is registered.",
     "stage_count": "In progress",
     "stage_todo": "Pending",
@@ -90,11 +90,18 @@
       "Digitisation and digital signing",
       "Sealing and blockchain registration",
       "Available for verification"
-    ]
+    ],
+    "body": "The code is correct. A tally sheet does not become verifiable the moment counting ends: it goes through several stages first.",
+    "step_count": "Counting at the polling station",
+    "step_receive": "Reception at the district office",
+    "step_sign": "Digitisation and electronic signature",
+    "step_seal": "Sealing and blockchain registration",
+    "step_ready": "Available to verify"
   },
   "errors": {
-    "not_found": "We could not find any tally sheet with this code.",
-    "unavailable": "The service is unavailable right now. Please try again in a few minutes."
+    "not_found": "No tally sheet was found for that code.",
+    "unavailable": "The service is unavailable right now. Please try again in a few minutes.",
+    "no_code": "Scan the QR code printed on the tally sheet to look it up."
   },
   "anchors": {
     "ipfs": "Distributed copy",
