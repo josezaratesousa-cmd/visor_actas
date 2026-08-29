@@ -53,14 +53,23 @@ async def get_record(request: Request, code: str):
 
 
 @router.get("/{code}/pdf")
-async def get_pdf(request: Request, code: str):
-    _, record = await _resolve(request, code)
+async def get_pdf(request: Request, code: str, download: bool = False):
+    """The signed PDF.
+
+    `download=1` asks for it as an attachment. That distinction is not
+    cosmetic: iOS Safari ignores the `download` attribute on a blob URL and
+    opens PDFs in its own viewer, so the only way a citizen on an iPhone
+    actually gets a file is for this header to say so.
+    """
+    service, record = await _resolve(request, code)
     document = _require_document(record.document)
+    station = record.identifier.split("/")[-1]
+    disposition = "attachment" if download else "inline"
     return Response(
         content=document.content,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'inline; filename="acta-{record.identifier.split("/")[-1]}.pdf"',
+            "Content-Disposition": f'{disposition}; filename="Mesa-{station}.pdf"',
             # Keyed by content: a changed file is a changed URL.
             "ETag": f'"{document.sha256}"',
             "Cache-Control": "public, max-age=3600",

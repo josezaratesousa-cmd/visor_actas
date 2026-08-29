@@ -34,8 +34,9 @@ export function render(target, record) {
           <path d="M19 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/>
         </svg>${esc(t('document.open'))}
       </a>
-      <button class="doc-btn" id="btn-download" data-url="${esc(doc.pdf_url)}"
-              data-name="acta-${esc(record.station)}.pdf">
+      <button class="doc-btn" id="btn-download"
+              data-url="${esc(doc.download_url || doc.pdf_url)}"
+              data-name="${esc(doc.filename || 'acta.pdf')}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
         </svg>${esc(t('document.download'))}
@@ -68,6 +69,17 @@ export function render(target, record) {
 const DOTS = 9;
 
 /**
+ * iOS Safari ignora el atributo `download` en una URL de blob y abre el PDF
+ * en su visor: la persona ve el documento, cierra, y no tiene ningun archivo.
+ * Ahi la unica forma de que baje de verdad es dejar que el navegador siga el
+ * enlace y lea el Content-Disposition del servidor.
+ *
+ * Se detecta tambien el iPad moderno, que se presenta como Macintosh.
+ */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
+/**
  * Descarga con progreso.
  *
  * En un telefono, tocar "Descargar" y que no pase nada visible durante unos
@@ -96,9 +108,26 @@ export function wireDownload(root) {
     label.textContent = `${t('document.downloading')} ${Math.round(pct)}%`;
   };
 
+  const restore = delay => setTimeout(() => {
+    panel.hidden = true;
+    button.closest('.doc-actions').hidden = false;
+  }, delay);
+
   button.addEventListener('click', async () => {
     const url = button.dataset.url;
     const filename = button.dataset.name;
+
+    if (IS_IOS) {
+      // El navegador se encarga: descarga a Archivos con el nombre que
+      // indica el servidor, y muestra su propio indicador.
+      label.textContent = t('document.download_direct');
+      button.closest('.doc-actions').hidden = true;
+      panel.hidden = false;
+      dots.forEach(dot => { dot.dataset.on = '1'; });
+      window.location.href = url;
+      restore(2500);
+      return;
+    }
 
     button.closest('.doc-actions').hidden = true;
     panel.hidden = false;
@@ -139,9 +168,6 @@ export function wireDownload(root) {
       window.location.href = url;
     }
 
-    setTimeout(() => {
-      panel.hidden = true;
-      button.closest('.doc-actions').hidden = false;
-    }, 1600);
+    restore(1600);
   });
 }

@@ -143,6 +143,8 @@ class RecordService:
         base["document"] = {
             "pages": [f"{api}/pages/{n}" for n in range(1, page_count + 1)],
             "pdf_url": f"{api}/pdf",
+            "download_url": f"{api}/pdf?download=1",
+            "filename": f"Mesa-{station}.pdf",
             "page_count": page_count,
             "size": _human_size(record.document.size),
         }

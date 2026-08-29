@@ -17,7 +17,7 @@
     "page_of": "Page {current} of {total}",
     "downloading": "Downloading",
     "downloaded": "Download complete",
-    "download_direct": "Opening the download…"
+    "download_direct": "Preparing the download…"
   },
   "verify": {
     "cta": "Verify on blockchain",
@@ -125,4 +125,4 @@
     "unavailable_lead": "The verification service did not answer. Nothing is wrong with the sheet: the system querying it is what failed.",
     "unavailable_note": "Try again in a few minutes. The link will still work later."
   }
-}
+}\n

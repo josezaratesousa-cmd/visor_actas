@@ -17,7 +17,7 @@
     "page_of": "Página {current} de {total}",
     "downloading": "Descargando",
     "downloaded": "Descarga completa",
-    "download_direct": "Abriendo la descarga…"
+    "download_direct": "Preparando la descarga…"
   },
   "verify": {
     "cta": "Verificar con blockchain",
@@ -125,4 +125,4 @@
     "unavailable_lead": "El servicio de verificación no respondió. El acta no tiene ningún problema: el que falla es el sistema que la consulta.",
     "unavailable_note": "Vuelva a intentarlo en unos minutos. El enlace seguirá siendo válido más tarde."
   }
-}
+}\n
