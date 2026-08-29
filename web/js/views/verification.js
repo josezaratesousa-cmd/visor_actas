@@ -50,16 +50,17 @@ export async function run(target, record, { instant = false } = {}) {
     record.signature.status === 'unsigned' ? t('verify.axis_signature_none') : `${record.signature.profile} · ${record.signature.signers.length}`;
   steps[3].dataset.state = 'done';
 
-  renderVerdict(target.querySelector('#verdict'), record);
-
-  // Los pasos ya cumplieron: mostraron que la comprobacion ocurrio de
-  // verdad y no es un tilde decorativo. Con el veredicto en pantalla solo
-  // compiten con el. Se repliegan tras una pausa corta, lo justo para que
-  // se vea marcarse el ultimo, y al reabrir la hoja ya no vuelven.
+  // Primero se van los pasos, despues llega el veredicto. Verlos juntos y
+  // que uno desaparezca delante del otro se lee como un fallo de la pagina;
+  // encadenados, se lee como una sola secuencia que termina.
   const stepList = target.querySelector('.steps');
   if (stepList) {
-    setTimeout(() => { stepList.dataset.done = '1'; }, instant ? 0 : 700);
+    await wait(450);                    // lo justo para ver marcarse el ultimo
+    stepList.dataset.done = '1';
+    await wait(420);                    // que termine de replegarse
   }
+
+  renderVerdict(target.querySelector('#verdict'), record);
 }
 
 function renderVerdict(node, record) {
