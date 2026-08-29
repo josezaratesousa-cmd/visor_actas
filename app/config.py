@@ -60,6 +60,19 @@ class Settings(BaseSettings):
     rollux_explorer: str = "https://explorer.rollux.com/tx/{value}"
     merkle_viewer: str = "https://stamping.io/es/view/?{trxid}"
 
+    # ── Throttling ───────────────────────────────────────────────────
+    # Generous on purpose. Mobile carriers put tens of thousands of
+    # subscribers behind one address, so a tight limit locks out a city
+    # rather than an abuser. See app/services/ratelimit.py.
+    rate_limit_per_second: float = 4.0
+    rate_limit_burst: int = 60
+    rate_limit_enabled: bool = True
+
+    # How long an attested record may be served from memory. The record
+    # itself does not change, so this only delays noticing a new
+    # attestation for a sheet that was pending.
+    record_cache_seconds: int = 60
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

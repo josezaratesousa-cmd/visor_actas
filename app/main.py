@@ -20,6 +20,7 @@ from app.config import get_settings
 from app.routers import records
 from app.services.custody import build_storage
 from app.services.record_service import RecordService
+from app.services.ratelimit import RateLimiter, client_address
 from app.services.rendering import PageRenderer
 
 logging.basicConfig(level=logging.INFO,
@@ -41,6 +42,8 @@ async def lifespan(application: FastAPI):
     application.state.settings = settings
     application.state.records = RecordService(settings, storage)
     application.state.renderer = PageRenderer(settings)
+    application.state.limiter = RateLimiter(
+        rate=settings.rate_limit_per_second, burst=settings.rate_limit_burst)
     logger.info("custody driver: %s", settings.custody_driver)
     yield
 
@@ -51,6 +54,26 @@ app = FastAPI(title="Visor de actas electorales", version="1.0",
               docs_url=None, redoc_url=None, openapi_url=None)
 
 app.include_router(records.router)
+
+
+@app.middleware("http")
+async def throttle(request: Request, call_next):
+    """Backstop against a single address hammering the service.
+
+    Health checks are exempt: a monitor locked out by the limiter would
+    report an outage that is not happening.
+    """
+    settings = request.app.state.settings
+    if settings.rate_limit_enabled and not request.url.path.endswith("/health"):
+        wait = request.app.state.limiter.check(
+            client_address(request.scope.get("client"), request.headers))
+        if wait is not None:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "too many requests"},
+                headers={"Retry-After": str(max(1, int(wait) + 1))},
+            )
+    return await call_next(request)
 
 
 @app.exception_handler(500)

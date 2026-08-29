@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from app.models import RecordStatus
@@ -10,6 +12,12 @@ from app.services.custody import Document
 router = APIRouter(prefix="/api/records", tags=["records"])
 
 CODE = r"^[A-Za-z0-9_-]{6,120}$"
+
+# A verified record does not change, and on a night when one sheet gets
+# shared widely the same lookup arrives thousands of times. Serving it from
+# memory is what keeps the upstream service from carrying that load; the
+# rate limiter is only the backstop behind it.
+_cache: dict[str, tuple[float, dict]] = {}
 
 
 async def _resolve(request: Request, code: str):
@@ -24,11 +32,24 @@ async def _resolve(request: Request, code: str):
 
 @router.get("/{code}")
 async def get_record(request: Request, code: str):
+    ttl = request.app.state.settings.record_cache_seconds
+    cached = _cache.get(code)
+    if cached and time.monotonic() - cached[0] < ttl:
+        return cached[1]
+
     service, record = await _resolve(request, code)
     pages = 0
     if record.document is not None:
         pages = await request.app.state.renderer.page_count(record.document.content)
-    return service.to_view(record, pages, code)
+    view = service.to_view(record, pages, code)
+
+    # Only verified records are cached. A pending one is expected to change,
+    # and a citizen who comes back after the anchor lands should see it.
+    if view.get("status") == "verified":
+        if len(_cache) > 20000:
+            _cache.clear()
+        _cache[code] = (time.monotonic(), view)
+    return view
 
 
 @router.get("/{code}/pdf")
