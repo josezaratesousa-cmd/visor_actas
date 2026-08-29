@@ -157,6 +157,20 @@ export function wireDownload(root) {
   button.addEventListener('click', async () => {
     const url = button.dataset.url;
     const filename = button.dataset.name;
+
+    // Una linea al pulsar, no en cada carga: el camino de descarga depende
+    // del navegador y del sistema, y cuando falla en el telefono de alguien
+    // esto es lo unico que dice por que. Sin datos del acta, solo del equipo.
+    console.info('[descarga]', {
+      ruta: IS_IOS ? 'compartir (iOS)' : 'descarga directa',
+      esIOS: IS_IOS,
+      puntosTactiles: navigator.maxTouchPoints,
+      eventosTactiles: 'ontouchstart' in window,
+      soportaDownload: 'download' in document.createElement('a'),
+      soportaCompartirArchivos: !!(navigator.canShare),
+      agente: navigator.userAgent,
+    });
+
     show();
     paint(0);
 
@@ -171,12 +185,14 @@ export function wireDownload(root) {
       const canDownload = 'download' in document.createElement('a') && !IS_IOS;
 
       if (!canDownload && navigator.canShare && navigator.canShare({ files: [file] })) {
+        console.info('[descarga] usando la hoja de compartir');
         label.textContent = t('document.save_prompt');
         await navigator.share({ files: [file] });   // "Guardar en Archivos"
         hide();
         return;
       }
 
+      console.info('[descarga] guardando el archivo directamente');
       label.textContent = t('document.downloaded');
       const href = URL.createObjectURL(blob);
       const link = Object.assign(document.createElement('a'), { href, download: filename });
@@ -188,6 +204,7 @@ export function wireDownload(root) {
       if (error && error.name === 'AbortError') { hide(); return; }  // cancelo
       // Ultimo recurso: que lo abra el navegador. No siempre guarda, pero
       // deja el documento a la vista y la persona puede compartirlo desde ahi.
+      console.warn('[descarga] fallo el camino previsto, abriendo en pestaña:', error);
       label.textContent = t('document.download_direct');
       window.open(url, '_blank', 'noopener');
     }
