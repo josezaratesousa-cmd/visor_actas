@@ -28,7 +28,7 @@ async def get_record(request: Request, code: str):
     pages = 0
     if record.document is not None:
         pages = await request.app.state.renderer.page_count(record.document.content)
-    return service.to_view(record, pages)
+    return service.to_view(record, pages, code)
 
 
 @router.get("/{code}/pdf")

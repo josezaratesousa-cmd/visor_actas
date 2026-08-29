@@ -108,5 +108,18 @@
     "lnet": "Timestamp",
     "rollux": "Public anchor",
     "stamping": "Immutability generator"
+  },
+  "state": {
+    "not_found_title": "We could not find this tally sheet",
+    "not_found_lead": "The code in this link does not match any registered sheet.",
+    "not_found_note_typo": "If you typed the address by hand, scan the QR code again: a single different character invalidates it.",
+    "not_found_note_damaged": "If the printed code is torn or blurred, the camera may have misread it. Try again in better light.",
+    "not_found_note_pending": "If counting has just finished, the sheet may not be published yet. Try again later.",
+    "no_code_title": "Scan a tally sheet code",
+    "no_code_lead": "This page shows one specific tally sheet and needs to know which.",
+    "no_code_note_where": "The QR code is printed on the tally sheet. Point your phone camera at it and open the link.",
+    "unavailable_title": "We could not look up the sheet",
+    "unavailable_lead": "The verification service did not answer. Nothing is wrong with the sheet: the system querying it is what failed.",
+    "unavailable_note": "Try again in a few minutes. The link will still work later."
   }
 }

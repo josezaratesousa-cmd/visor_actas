@@ -96,7 +96,8 @@ class RecordService:
 
 # ── shaping ───────────────────────────────────────────────────────────
 
-    def to_view(self, record: ResolvedRecord, page_count: int) -> dict[str, Any]:
+    def to_view(self, record: ResolvedRecord, page_count: int,
+                code: str = "") -> dict[str, Any]:
         """Everything the frontend needs, and nothing it does not.
 
         Fields the browser has no business seeing are dropped here rather
@@ -133,9 +134,15 @@ class RecordService:
         base["process"] = ({"code": data.process.code, "name": data.process.name}
                            if data else
                            {"code": integrity.get("transactionType", ""), "name": ""})
+        # Absolute paths, deliberately. The page lives at /<code>, so a
+        # relative "pages/1" resolves against the parent directory and misses
+        # by exactly one segment - a 404 that leaves the viewer blank with
+        # nothing in the console to explain it.
+        root = self._settings.app_root_path.rstrip("/")
+        api = f"{root}/api/records/{code}"
         base["document"] = {
-            "pages": [f"pages/{n}" for n in range(1, page_count + 1)],
-            "pdf_url": "pdf",
+            "pages": [f"{api}/pages/{n}" for n in range(1, page_count + 1)],
+            "pdf_url": f"{api}/pdf",
             "page_count": page_count,
             "size": _human_size(record.document.size),
         }

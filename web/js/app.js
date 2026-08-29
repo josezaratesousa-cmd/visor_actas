@@ -13,6 +13,7 @@ import * as documentView from './views/document.js';
 import * as results from './views/results.js';
 import * as verification from './views/verification.js';
 import * as share from './views/share.js';
+import * as stateView from './views/state.js';
 
 const state = { record: null, verified: false };
 
@@ -22,13 +23,13 @@ async function boot() {
   i18n.apply();
 
   const code = currentCode();
-  if (!code) { showMessage('errors.no_code'); return; }
+  if (!code) { showState('no_code'); return; }
 
   state.record = await fetchRecord(code);
   const record = state.record;
 
   // A sheet still in transit has no document and no attestation to show.
-  if (record.status === 'pending') { showPending(record); return; }
+  if (record.status === 'pending') { showState('pending'); return; }
 
   $('#station').textContent = `${i18n.t('app.table')} ${record.station}`;
   $('#process').textContent = record.process.name;
@@ -100,33 +101,17 @@ function wire() {
   });
 }
 
-function showMessage(key) {
+/** Hand the whole screen over to a state page. */
+function showState(kind) {
   $('#rail').hidden = true;
-  document.querySelectorAll('.sheet').forEach(s => { s.hidden = true; });
-  $('#canvas').innerHTML = `<p class="provenance">${i18n.t(key)}</p>`;
-}
-
-/** The sheet exists but is not verifiable yet: say where it is, not "error". */
-function showPending(record) {
-  $('#station').textContent = i18n.t('pending.title');
+  document.querySelectorAll('.sheet').forEach(sheet => { sheet.hidden = true; });
+  $('#btn-share').hidden = true;
+  $('#station').textContent = '';
   $('#process').textContent = '';
-  $('#rail').hidden = true;
-  document.querySelectorAll('.sheet').forEach(s => { s.hidden = true; });
-  $('#canvas').innerHTML = `
-    <div class="pending">
-      <h1 class="pending__title">${i18n.t('pending.title')}</h1>
-      <p class="pending__text">${i18n.t('pending.body')}</p>
-      <ol class="pending__steps">
-        ${['pending.step_count', 'pending.step_receive', 'pending.step_sign',
-           'pending.step_seal', 'pending.step_ready']
-          .map(k => `<li>${i18n.t(k)}</li>`).join('')}
-      </ol>
-      <p class="provenance">${i18n.t('pending.retry')}</p>
-    </div>`;
+  stateView.render($('#canvas'), kind);
 }
 
 boot().catch(error => {
   console.error(error);
-  showMessage(error instanceof RecordUnavailable
-    ? 'errors.not_found' : 'errors.unavailable');
+  showState(error instanceof RecordUnavailable ? 'not_found' : 'unavailable');
 });

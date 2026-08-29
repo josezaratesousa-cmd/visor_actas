@@ -15,7 +15,7 @@ import { t } from '../core/i18n.js';
 export function render(target, record) {
   const doc = record.document;
   const pages = doc.pages.map((src, index) =>
-    `<img class="page" src="${esc(src)}" srcset="${esc(src)} 1x, ${esc(src.replace(".webp", "@2x.webp"))} 2x" alt="${esc(t('document.page_of', {
+    `<img class="page" src="${esc(src)}" srcset="${esc(src)} 1x, ${esc(src)}?density=%402x 2x" alt="${esc(t('document.page_of', {
       current: index + 1, total: doc.page_count
     }))}" loading="${index ? 'lazy' : 'eager'}">`
   ).join('');

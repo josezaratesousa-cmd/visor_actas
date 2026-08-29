@@ -108,5 +108,18 @@
     "lnet": "Sello de tiempo",
     "rollux": "Anclaje público",
     "stamping": "Generador de inmutabilidad"
+  },
+  "state": {
+    "not_found_title": "No encontramos esta acta",
+    "not_found_lead": "El codigo del enlace no corresponde a ninguna acta registrada.",
+    "not_found_note_typo": "Si escribio la direccion a mano, vuelva a escanear el codigo QR: un solo caracter distinto lo invalida.",
+    "not_found_note_damaged": "Si el codigo impreso esta roto o borroso, la camara puede haber leido mal. Intente de nuevo con mejor luz.",
+    "not_found_note_pending": "Si acaba de terminar el escrutinio, es posible que el acta todavia no este publicada. Vuelva a intentarlo mas tarde.",
+    "no_code_title": "Escanee el codigo de un acta",
+    "no_code_lead": "Esta pagina muestra un acta electoral concreta y necesita saber cual.",
+    "no_code_note_where": "El codigo QR esta impreso en el acta de escrutinio. Apunte con la camara de su telefono y abra el enlace que aparece.",
+    "unavailable_title": "No pudimos consultar el acta",
+    "unavailable_lead": "El servicio de verificacion no respondio. El acta no tiene ningun problema: el que falla es el sistema que la consulta.",
+    "unavailable_note": "Vuelva a intentarlo en unos minutos. Si el problema sigue, el enlace seguira siendo valido mas tarde."
   }
 }
