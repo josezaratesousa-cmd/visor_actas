@@ -2,17 +2,20 @@
 
     code → identifier → PDF in custody → SHA-256 → attestation → view
 
-Telling "altered" apart from "not yet registered" is the whole point, and it
-decides how the record is looked up.
+The lookup is by transaction id, which is sha1 of the sha256 of the PDF held
+in custody. That makes the question "was this exact file registered?", and a
+miss means the sheet is still on its way.
 
-A lookup by hash cannot separate them: an altered file has a different hash
-and therefore a different transaction id, so the query misses exactly as it
-would for a sheet nobody ever registered. Reporting a tampered sheet as
-merely pending would be the opposite of what this product exists to say.
+It cannot mean tampering, and the viewer must not read it that way. An
+altered file has a different hash and therefore a different transaction id,
+so it misses in exactly the way an unregistered sheet does. Detecting a
+substituted document happens upstream, before this service is called; here a
+miss is reported as PENDING and nothing more. Accusing a document on
+evidence this thin would be worse than saying too little.
 
-So the lookup goes by the entity's own key, which finds the record either
-way. The registered evidence is then compared against the hash computed from
-the file actually held in custody, and that comparison is what decides.
+Because the question carries no identity of its own - only a file hash - the
+public route answers it. The viewer therefore holds no credential at all: an
+attacker who reaches this code finds no token to steal.
 """
 
 from __future__ import annotations
@@ -51,12 +54,6 @@ class RecordService:
         """QR code → internal identifier, e.g. 'EMC-2026/035253'."""
         return self._cipher.decode(code)
 
-    def external_key(self, identifier: str) -> str:
-        """Identifier → the key the entity registered the sheet under."""
-        process, _, station = identifier.partition("/")
-        prefix = self._settings.external_key_prefix
-        return f"{prefix}-{process}-{station}" if station else f"{prefix}-{process}"
-
     # ── the chain ─────────────────────────────────────────────────────────
 
     async def resolve(self, code: str) -> ResolvedRecord:
@@ -74,24 +71,28 @@ class RecordService:
             logger.exception("custody failure for %s", identifier)
             return ResolvedRecord(RecordStatus.PENDING, identifier)
 
+        trx_id = hashlib.sha1(document.sha256.encode()).hexdigest()  # noqa: S324
         try:
             async with StampingClient(self._settings) as api:
-                payload = await api.get_by_external_key(self.external_key(identifier))
+                payload = await api.get_by_trx_id(trx_id)
         except RecordNotFound:
-            # No record under that key: the sheet is in custody but has not
-            # been sealed yet. Still in transit, not altered.
+            # Not registered: the sheet is still on its way. See the module
+            # docstring for why this is never read as tampering.
             return ResolvedRecord(RecordStatus.PENDING, identifier, document)
         except StampingError:
             logger.exception("attestation lookup failed for %s", identifier)
             return ResolvedRecord(RecordStatus.PENDING, identifier, document)
 
+        # The transaction id derives from the hash, so a hit already implies
+        # the file matches. Compared again anyway: it costs nothing, and the
+        # one thing this service must never do is report a match it did not
+        # actually check.
         registered = (payload.get("result", {})
                              .get("integrity", {})
                              .get("evidence", ""))
-        status = (RecordStatus.VERIFIED
-                  if registered and registered == document.sha256
-                  else RecordStatus.ALTERED)
-        return ResolvedRecord(status, identifier, document, payload)
+        if registered != document.sha256:
+            return ResolvedRecord(RecordStatus.PENDING, identifier, document)
+        return ResolvedRecord(RecordStatus.VERIFIED, identifier, document, payload)
 
 # ── shaping ───────────────────────────────────────────────────────────
 

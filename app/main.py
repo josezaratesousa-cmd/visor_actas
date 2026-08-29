@@ -33,8 +33,7 @@ CODE_PATTERN = r"^[A-Za-z0-9_-]{6,120}$"
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     settings = get_settings()
-    if not settings.stamping_token:
-        raise RuntimeError("STAMPING_TOKEN is empty; check the .env file")
+    # STAMPING_TOKEN is optional: the viewer only uses public lookups.
     if not settings.code_cipher_key:
         raise RuntimeError("CODE_CIPHER_KEY is empty; check the .env file")
 

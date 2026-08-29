@@ -142,3 +142,4 @@ def safe_identifier(identifier: str) -> str:
 # Importing the built-in drivers runs their @register decorators.
 from app.services.custody import local as _local  # noqa: E402,F401
 from app.services.custody import s3 as _s3        # noqa: E402,F401
+from app.services.custody import stub as _stub    # noqa: E402,F401

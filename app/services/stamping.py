@@ -9,11 +9,16 @@ refuses any method other than GET, so an attacker who reaches the request
 handling code still has no way to forge an attestation through it. The token
 this service uses can — and should — be one that only grants reads.
 
-The second rule is that the API token travels in a header, never in a query
-string. Query strings are written to web server access logs in plain text
-and kept there through every rotation and backup, so a credential sent that
-way is a credential published to everyone who can read a log file. Keeping
-it out of the URL is much of the point of having a backend at all.
+The viewer needs no credential at all. It asks by transaction id, which is
+derived from the hash of the file it holds, and that route is public by
+design: a hash is a fingerprint of content and reveals nothing on its own.
+An attacker who reaches this code finds no token to steal.
+
+A token is still supported for the lookups that require one, and when it is
+present it travels in a header, never in a query string. Query strings are
+written to access logs in plain text and kept through every rotation and
+backup, so a credential sent that way is a credential published to everyone
+who can read a log file.
 """
 
 from __future__ import annotations
@@ -56,14 +61,21 @@ class StampingClient:
             self._client = httpx.AsyncClient(
                 base_url=self._settings.stamping_base_url.rstrip("/"),
                 timeout=self._settings.stamping_timeout,
-                headers={
-                    # Header, not query string. See module docstring.
-                    "X-API-Token": self._settings.stamping_token,
-                    "Accept": "application/json",
-                    "User-Agent": "visor-actas/1.0",
-                },
+                headers=self._headers(),
             )
         return self
+
+    def _headers(self) -> dict[str, str]:
+        """Only send a token when one is configured.
+
+        The public lookups need none, so an empty setting is a valid
+        deployment rather than a misconfiguration.
+        """
+        headers = {"Accept": "application/json", "User-Agent": "visor-actas/1.0"}
+        if self._settings.stamping_token:
+            # Header, not query string. See the module docstring.
+            headers["X-API-Token"] = self._settings.stamping_token
+        return headers
 
     async def __aexit__(self, *_exc_info: object) -> None:
         if self._owns_client and self._client is not None:
@@ -107,9 +119,6 @@ class StampingClient:
             raise StampingError("the viewer is read-only")
         if self._client is None:
             raise StampingError("client used outside its context manager")
-        if not self._settings.stamping_token:
-            raise StampingError("STAMPING_TOKEN is empty; check the .env file")
-
         try:
             response = await self._client.request(method, path, **kwargs)
         except httpx.TimeoutException as exc:
