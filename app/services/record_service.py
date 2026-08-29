@@ -2,26 +2,17 @@
 
     code → identifier → PDF in custody → SHA-256 → attestation → view
 
-Telling "altered" apart from "not yet registered" is the hard part, and the
-way it is done here is a compromise forced from outside.
+Telling "altered" apart from "not yet registered" is the whole point, and it
+decides how the record is looked up.
 
-A lookup by hash cannot distinguish them on its own: an altered file has a
-different hash and therefore a different transaction id, so the query simply
-misses, exactly as it would for a sheet nobody ever registered. Reporting a
-tampered sheet as merely pending would be the opposite of what this product
-exists to say.
+A lookup by hash cannot separate them: an altered file has a different hash
+and therefore a different transaction id, so the query misses exactly as it
+would for a sheet nobody ever registered. Reporting a tampered sheet as
+merely pending would be the opposite of what this product exists to say.
 
-The clean answer is to look the record up by the entity's own key, which
-finds it either way and lets the registered evidence be compared against the
-hash we computed. That route needs authentication, and the query endpoint
-reads parameters only from $_GET and $_REQUEST - it never looks at a header.
-Authenticating would mean putting the token in the query string, where it is
-written to the access log in plain text and kept through every rotation and
-backup. That trade is not worth making.
-
-So the viewer asks the public by-hash route twice: once for the file it holds,
-and once for the sheet the code says it should be holding. Two questions
-instead of one, and no credential in a URL.
+So the lookup goes by the entity's own key, which finds the record either
+way. The registered evidence is then compared against the hash computed from
+the file actually held in custody, and that comparison is what decides.
 """
 
 from __future__ import annotations
@@ -83,16 +74,13 @@ class RecordService:
             logger.exception("custody failure for %s", identifier)
             return ResolvedRecord(RecordStatus.PENDING, identifier)
 
-        trx_id = hashlib.sha1(document.sha256.encode()).hexdigest()  # noqa: S324
         try:
             async with StampingClient(self._settings) as api:
-                payload = await api.get_by_trx_id(trx_id)
+                payload = await api.get_by_external_key(self.external_key(identifier))
         except RecordNotFound:
-            # The file we hold is not registered. Either the sheet was never
-            # sealed, or what sits in custody is not what was sealed. Those
-            # are very different things to tell a citizen, so ask a second
-            # question before answering.
-            return await self._diagnose_miss(identifier, document)
+            # No record under that key: the sheet is in custody but has not
+            # been sealed yet. Still in transit, not altered.
+            return ResolvedRecord(RecordStatus.PENDING, identifier, document)
         except StampingError:
             logger.exception("attestation lookup failed for %s", identifier)
             return ResolvedRecord(RecordStatus.PENDING, identifier, document)
@@ -105,23 +93,7 @@ class RecordService:
                   else RecordStatus.ALTERED)
         return ResolvedRecord(status, identifier, document, payload)
 
-    async def _diagnose_miss(self, identifier: str,
-                             document: Document) -> ResolvedRecord:
-        """The file we hold is unknown to the attestation service.
-
-        The subject of a registered sheet contains its polling station, so a
-        sheet that was sealed can be recognised even when the bytes no longer
-        match. Absent a way to search by station on the public route, this
-        reports PENDING and says so plainly rather than accusing a document it
-        cannot actually convict.
-        """
-        logger.warning(
-            "no attestation for %s (sha256 %s): unregistered, or custody holds "
-            "a file that differs from the sealed one",
-            identifier, document.sha256[:16])
-        return ResolvedRecord(RecordStatus.PENDING, identifier, document)
-
-    # ── shaping ───────────────────────────────────────────────────────────
+# ── shaping ───────────────────────────────────────────────────────────
 
     def to_view(self, record: ResolvedRecord, page_count: int) -> dict[str, Any]:
         """Everything the frontend needs, and nothing it does not.
