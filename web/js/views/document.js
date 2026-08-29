@@ -54,10 +54,10 @@ export function render(target, record) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3v11"/><path d="m8 6.6 4-3.6 4 3.6"/>
           <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>
-        </svg>${esc(t('document.save_ios'))}` : `
+        </svg>` : `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
-        </svg>${esc(t('document.download'))}`}
+        </svg>`}${esc(t('document.download'))}
       </button>
     </div>
 
@@ -111,7 +111,7 @@ export function wireDownload(root) {
   const paint = pct => {
     const filled = Math.round(pct / 100 * DOTS);
     dots.forEach((dot, index) => { dot.dataset.on = index < filled ? '1' : '0'; });
-    label.textContent = `${t(IS_IOS ? 'document.preparing' : 'document.downloading')} ${Math.round(pct)}%`;
+    label.textContent = `${t('document.downloading')} ${Math.round(pct)}%`;
   };
 
   const show = () => { button.closest('.doc-actions').hidden = true; panel.hidden = false; };

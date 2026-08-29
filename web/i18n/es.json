@@ -18,9 +18,7 @@
     "downloading": "Descargando",
     "downloaded": "Descarga completa",
     "download_direct": "Preparando la descarga…",
-    "save_prompt": "Elija «Guardar en Archivos»",
-    "save_ios": "Guardar en Archivos",
-    "preparing": "Preparando"
+    "save_prompt": "Elija «Guardar en Archivos»"
   },
   "verify": {
     "cta": "Verificar con blockchain",
