@@ -137,6 +137,10 @@ a { color: inherit; }
 .rubric:first-child { margin-top: 0; }
 
 /* ── verification ────────────────────────────────────────────────── */
+.steps { overflow: hidden; max-height: 260px; opacity: 1;
+  transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .3s ease,
+              margin-bottom .45s cubic-bezier(.4,0,.2,1); }
+.steps[data-done="1"] { max-height: 0; opacity: 0; margin-bottom: 0; }
 .step { display: flex; align-items: center; gap: 11px; padding: 9px 0; }
 .step__mark { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
   border: 2px solid var(--rule-strong); display: grid; place-items: center;

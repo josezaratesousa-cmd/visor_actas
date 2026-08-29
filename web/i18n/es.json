@@ -52,7 +52,7 @@
     "anchored": "Anclado",
     "axis_signature_none": "Sin firma digital",
     "axis_signature_none_detail": "Este documento no lleva firma electrónica",
-    "verdict_unsigned": "Integridad confirmada",
+    "verdict_unsigned": "Integridad verificada",
     "verdict_unsigned_detail": "Coincide con lo sellado en blockchain. No lleva firma electrónica.",
     "signers_none": "Firma digital",
     "no_signature": "El documento no contiene ninguna firma electrónica, por lo que no hay firmante que mostrar.",

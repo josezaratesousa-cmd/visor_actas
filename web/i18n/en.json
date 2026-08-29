@@ -52,7 +52,7 @@
     "anchored": "Anchored",
     "axis_signature_none": "Not digitally signed",
     "axis_signature_none_detail": "This document carries no electronic signature",
-    "verdict_unsigned": "Integrity confirmed",
+    "verdict_unsigned": "Integrity verified",
     "verdict_unsigned_detail": "Matches what was sealed in blockchain. Carries no electronic signature.",
     "signers_none": "Digital signature",
     "no_signature": "The document contains no electronic signature, so there is no signer to show.",
