@@ -24,14 +24,19 @@ import { t } from '../core/i18n.js';
  */
 const IS_IOS = (() => {
   const ua = navigator.userAgent;
+
+  // Un sistema que no es de Apple nunca toma el camino de iOS, pase lo que
+  // pase con el resto del user agent. Extensiones y modos de compatibilidad
+  // lo reescriben, y una cadena alterada estaba mandando un portatil Windows
+  // a la hoja de compartir. Aqui la exclusion manda sobre la deteccion.
+  if (/Windows|Android|CrOS|X11|Linux/.test(ua)) return false;
+
   if (/iPad|iPhone|iPod/.test(ua)) return true;
 
   // Un iPad en Safari se presenta como "Macintosh". Distinguirlo de un Mac
-  // de verdad necesita las dos condiciones juntas: puntos tactiles Y eventos
-  // tactiles. Un Mac puede reportar maxTouchPoints por el trackpad, pero
-  // nunca expone ontouchstart; comprobar solo lo primero manda a los
-  // portatiles por el camino de iOS, que es lo que ocurrio aqui.
-  return /Macintosh/.test(ua)
+  // necesita las dos condiciones juntas: un Mac reporta puntos tactiles por
+  // el trackpad pero nunca expone ontouchstart.
+  return /Macintosh|Mac OS X/.test(ua)
     && navigator.maxTouchPoints > 1
     && 'ontouchstart' in window;
 })();
@@ -168,8 +173,11 @@ export function wireDownload(root) {
       eventosTactiles: 'ontouchstart' in window,
       soportaDownload: 'download' in document.createElement('a'),
       soportaCompartirArchivos: !!(navigator.canShare),
-      agente: navigator.userAgent,
     });
+    // Aparte del objeto: la consola colapsa las cadenas largas dentro de uno,
+    // y el user agent completo es justo lo que hace falta cuando la deteccion
+    // se equivoca.
+    console.info('[descarga] agente:', navigator.userAgent);
 
     show();
     paint(0);
