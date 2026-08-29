@@ -48,6 +48,18 @@ class Settings(BaseSettings):
     code_cipher_key: str = Field(default="", repr=False)
     cache_path: Path = Path("/tmp/custody/cache")
 
+    # ── Anchors ──────────────────────────────────────────────────────
+    # Networks the platform writes to, and where to send a citizen who
+    # wants to see the record for themselves. Defaults match the current
+    # deployment; an explorer that moves, or a chain id that changes, is
+    # a line in the .env rather than a release.
+    ipfs_gateway: str = "https://ipfs.io/ipfs/{value}"
+    lacchain_chain_id: str = "648541"
+    lacchain_explorer: str = "https://explorer.lacnet.com/tx/{value}"
+    rollux_chain_id: str = "570"
+    rollux_explorer: str = "https://explorer.rollux.com/tx/{value}"
+    merkle_viewer: str = "https://stamping.io/es/view/?{trxid}"
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

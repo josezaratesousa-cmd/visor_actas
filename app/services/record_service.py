@@ -152,7 +152,7 @@ class RecordService:
             "sealed_at": _epoch_ms(existence.get("timestamp")),
             "anchored_at": _utc(existence.get("anchored")),
             "block_number": block.get("number") or None,
-            "anchors": _anchors(block, mainnet, integrity, result),
+            "anchors": _anchors(block, mainnet, integrity, result, self._settings),
         }
         base["signature"] = _signature(record.document.content)
         base["location"] = _location(data, ownership)
@@ -197,35 +197,41 @@ def _utc(value: Any) -> str | None:
     return f"{value} UTC" if value else None
 
 
-def _anchors(block, mainnet, integrity, result) -> list[dict[str, Any]]:
+def _anchors(block, mainnet, integrity, result,
+             settings: Settings) -> list[dict[str, Any]]:
     """Only anchors that actually exist.
 
-    The four are fixed and listed here on purpose. IPFS, LACChain, Rollux and
-    the Merkle root are the anchors the platform writes, and the chain ids are
-    properties of those networks, not settings: they cannot change without the
-    platform changing. A catalogue file would add a moving part to hold values
-    that do not move. The response carries other network fields - polygon,
-    celo, bsc and so on - which stay empty and are deliberately ignored.
+    Four of them: IPFS, LACChain, Rollux and the Merkle root. That set is
+    what the platform writes, so it is a list rather than a lookup - the
+    response also carries polygon, celo, bsc and others, which stay empty
+    and are deliberately ignored.
+
+    Chain ids and explorer addresses come from settings. They change rarely,
+    but when an explorer moves it should cost a line in the .env, not a
+    release.
 
     The obvious fields are the wrong ones: integrity.tx_lacchain holds "0x"
     and integrity.infocid is empty even on a fully anchored record. An anchor
     whose value is absent is omitted rather than shown with a placeholder —
     a hash that leads nowhere in a block explorer is worse than no hash.
     """
-    trx_id = result.get("tree", {}).get("hash") or integrity.get("evidence", "")
+    trx_id = hashlib.sha1(  # noqa: S324
+        integrity.get("evidence", "").encode()).hexdigest()
+
     candidates = [
         ("IPFS", "anchors.ipfs", "InterPlanetary File System",
-         block.get("ipfs"), "https://ipfs.io/ipfs/{v}", "assets/networks/ipfs.svg", None, False),
-        ("LNET", "anchors.lnet", "LACChain · chainId 648541",
-         mainnet.get("lacchain"), "https://explorer.lacnet.com/tx/{v}",
+         block.get("ipfs"), settings.ipfs_gateway,
+         "assets/networks/ipfs.svg", None, False),
+        ("LNET", "anchors.lnet",
+         f"LACChain \u00b7 chainId {settings.lacchain_chain_id}",
+         mainnet.get("lacchain"), settings.lacchain_explorer,
          "assets/networks/lacchain.png", None, False),
-        ("RLX", "anchors.rollux", "Rollux · chainId 570",
-         mainnet.get("rollux"), "https://explorer.rollux.com/tx/{v}",
+        ("RLX", "anchors.rollux",
+         f"Rollux \u00b7 chainId {settings.rollux_chain_id}",
+         mainnet.get("rollux"), settings.rollux_explorer,
          "assets/networks/rollux.png", None, False),
-        ("STP", "anchors.stamping", "Stamping.io · Merkle tree",
-         block.get("hashblock"),
-         "https://stamping.io/es/view/?" + hashlib.sha1(  # noqa: S324
-             integrity.get("evidence", "").encode()).hexdigest(),
+        ("STP", "anchors.stamping", "Stamping.io \u00b7 Merkle tree",
+         block.get("hashblock"), settings.merkle_viewer.format(trxid=trx_id),
          "assets/networks/stamping.ico", "verify.view_merkle", True),
     ]
     anchors = []
@@ -234,7 +240,7 @@ def _anchors(block, mainnet, integrity, result) -> list[dict[str, Any]]:
             continue
         anchors.append({
             "key": key, "label_key": label, "network": network, "value": value,
-            "url": url.format(v=value) if "{v}" in url else url,
+            "url": url.format(value=value) if "{value}" in url else url,
             "logo": logo, "action_key": action, "is_root": root,
         })
     return anchors
