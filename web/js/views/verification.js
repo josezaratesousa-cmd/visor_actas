@@ -133,7 +133,7 @@ function renderVerdict(node, record) {
       <div class="anchor${anchor.is_root ? ' anchor--root' : ''}">
         <div class="anchor__badge">${anchor.logo
           ? `<img src="${esc(anchor.logo)}" alt="" loading="lazy"
-                  onerror="this.replaceWith(document.createTextNode('${esc(anchor.key)}'))">`
+                  data-fallback="${esc(anchor.key)}">`
           : esc(anchor.key)}</div>
         <div>
           <div class="anchor__name">${esc(t(anchor.label_key))}
@@ -156,6 +156,16 @@ function renderVerdict(node, record) {
     ${renderPlace(record.location)}`;
 
   node.hidden = false;
+
+  // Respaldo del logo sin atributos onerror: un manejador en linea obliga a
+  // abrir la CSP con 'unsafe-inline', que es justo lo que la vuelve inutil
+  // contra la inyeccion de scripts.
+  node.querySelectorAll('img[data-fallback]').forEach(img => {
+    img.addEventListener('error', () => {
+      img.replaceWith(document.createTextNode(img.dataset.fallback));
+    }, { once: true });
+  });
+
   paintFingerprint(node.querySelector('#print'), a.evidence);
   growBars(node);
 }

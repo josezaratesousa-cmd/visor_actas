@@ -31,6 +31,12 @@ Hex64 = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
 Hex40 = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{40}$")]
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^\d{6}$")]
 
+# La mesa se muestra en pantalla, viaja en el nombre del archivo descargado y
+# entra en las etiquetas Open Graph. Restringirla en la ingesta cierra esos
+# tres caminos de una vez, en lugar de confiar en que cada punto de salida
+# recuerde escapar.
+Station = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9 \-]{0,23}$")]
+
 
 class WireModel(BaseModel):
     """Base for everything that crosses the wire with ONPE."""
@@ -65,7 +71,7 @@ class Results(WireModel):
     """
 
     version: str = "1.0"
-    polling_station: str = Field(alias="mesa", min_length=1)
+    polling_station: Station = Field(alias="mesa")
     eligible_voters: int = Field(alias="electores_habiles", ge=0)
     voters: int = Field(alias="votantes", ge=0)
     valid_votes: int = Field(alias="votos_validos", ge=0)
@@ -169,7 +175,7 @@ class RecordData(WireModel):
     """Contents of the base64 `data` field."""
 
     version: str = "1.0"
-    polling_station: str = Field(alias="mesa", min_length=1)
+    polling_station: Station = Field(alias="mesa")
     folio: str | None = None
     process: Process = Field(alias="proceso")
     location: Location | None = Field(default=None, alias="ubicacion")

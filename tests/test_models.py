@@ -104,3 +104,34 @@ def test_record_data_round_trip():
     data = decode_payload(encoded, RecordData)
     assert data.process.code == "EMC-2026"
     assert data.location.venue.startswith("I.E. 1120")
+
+
+# ── injection ────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("station", [
+    "<img src=x onerror=alert(1)>",
+    '"><script>fetch("//evil")</script>',
+    "035253\r\nSet-Cookie: a=b",          # header injection via the filename
+    "../../etc/passwd",
+    "035253' OR '1'='1",
+    "javascript:alert(1)",
+    "a" * 40,
+])
+def test_hostile_station_is_rejected_at_ingestion(station):
+    """The station reaches the screen, a filename and the Open Graph tags.
+
+    Constraining it here closes all three at once instead of trusting every
+    exit point to remember to escape.
+    """
+    payload = {"version": "1.0", "mesa": station,
+               "proceso": {"codigo": "X", "nombre": "Y"}}
+    with pytest.raises(ValidationError):
+        RecordData.model_validate(payload)
+
+
+@pytest.mark.parametrize("station", ["035253", "Mesa 12", "A-0001"])
+def test_ordinary_stations_still_pass(station):
+    payload = {"version": "1.0", "mesa": station,
+               "proceso": {"codigo": "X", "nombre": "Y"}}
+    assert RecordData.model_validate(payload).polling_station == station

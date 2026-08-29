@@ -79,6 +79,48 @@ app = FastAPI(title="Visor de actas electorales", version="1.0",
 app.include_router(records.router)
 
 
+# La politica se declara una vez y se manda en cada respuesta. Los tipos de
+# letra vienen de Google, que es la unica excepcion externa; todo lo demas
+# sale de este mismo origen.
+#
+# style-src acepta 'unsafe-inline' porque las barras de resultados y de
+# progreso llevan su ancho y su color en un atributo style, calculados por
+# dato. Es una concesion real y conviene saberla: permite inyectar estilos,
+# no scripts. script-src queda cerrado, que es donde esta el dano.
+CSP = "; ".join([
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data:",
+    "connect-src 'self'",
+    "form-action 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+    "object-src 'none'",
+])
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": CSP,
+    # El acta no debe poder incrustarse en otra pagina: una copia dentro de
+    # un marco ajeno se lee como si fuera de quien la enmarca.
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    # El codigo del acta viaja en la ruta, asi que no debe salir hacia otro
+    # sitio cuando el ciudadano toca un enlace a un explorador de bloques.
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "geolocation=(), camera=(), microphone=(), payment=()",
+}
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    return response
+
+
 @app.middleware("http")
 async def throttle(request: Request, call_next):
     """Backstop against a single address hammering the service.

@@ -19,6 +19,17 @@ const state = { record: null, verified: false };
 
 async function boot() {
   theme.init();
+
+  // Si la marca oficial no esta, queda el logotipo tipografico. Se conecta
+  // aqui y no con un onerror en el HTML: un manejador en linea obliga a
+  // abrir la CSP con 'unsafe-inline'.
+  const logo = $('#brand-logo');
+  if (logo) {
+    logo.addEventListener('error', () => {
+      logo.parentNode.classList.add('brand--text');
+      logo.remove();
+    }, { once: true });
+  }
   await i18n.load(i18n.resolveLocale('es'));
   i18n.apply();
 
