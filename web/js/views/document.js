@@ -9,7 +9,7 @@
  * signed PDF stays one tap away for whoever actually needs the file.
  */
 
-import { esc } from '../core/dom.js';
+import { esc, safeUrl } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 
 /**
@@ -57,7 +57,7 @@ export function render(target, record) {
   target.innerHTML = `
     ${pages}${dots}
     <div class="doc-actions">
-      <a class="doc-btn" href="${esc(doc.pdf_url)}" target="_blank" rel="noopener">
+      <a class="doc-btn" href="${safeUrl(doc.pdf_url)}" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 3h7v7"/><path d="M10 14 21 3"/>
           <path d="M19 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/>

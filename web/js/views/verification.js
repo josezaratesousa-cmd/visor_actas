@@ -12,7 +12,7 @@
  * result stays in memory until the page is reloaded.
  */
 
-import { esc, growBars } from '../core/dom.js';
+import { esc, growBars, safeUrl } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 
 const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L19 8"/></svg>';
@@ -138,8 +138,8 @@ function renderVerdict(node, record) {
         <div>
           <div class="anchor__name">${esc(t(anchor.label_key))}
             <span class="anchor__net">${esc(anchor.network)}</span></div>
-          <a class="anchor__hash" href="${esc(anchor.url)}" target="_blank" rel="noopener">${esc(anchor.value)}</a>
-          ${anchor.action_key ? `<a class="anchor__go" href="${esc(anchor.url)}" target="_blank" rel="noopener">
+          <a class="anchor__hash" href="${safeUrl(anchor.url)}" target="_blank" rel="noopener">${esc(anchor.value)}</a>
+          ${anchor.action_key ? `<a class="anchor__go" href="${safeUrl(anchor.url)}" target="_blank" rel="noopener">
             ${esc(t(anchor.action_key))}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>` : ''}
         </div>
