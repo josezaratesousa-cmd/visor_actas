@@ -56,10 +56,14 @@ async def get_record(request: Request, code: str):
 async def get_pdf(request: Request, code: str, download: bool = False):
     """The signed PDF.
 
-    `download=1` asks for it as an attachment. That distinction is not
-    cosmetic: iOS Safari ignores the `download` attribute on a blob URL and
-    opens PDFs in its own viewer, so the only way a citizen on an iPhone
-    actually gets a file is for this header to say so.
+    `download=1` asks for it as a file to keep rather than something to look
+    at, and that changes both headers.
+
+    iOS Safari previews anything served as application/pdf, and it does so
+    even when Content-Disposition says attachment: the citizen sees the
+    document, closes it, and has no file. Announcing the download variant as
+    an opaque binary is what actually makes Safari save it. The bytes are
+    identical and the name still ends in .pdf, so Files opens it correctly.
     """
     service, record = await _resolve(request, code)
     document = _require_document(record.document)
@@ -67,7 +71,7 @@ async def get_pdf(request: Request, code: str, download: bool = False):
     disposition = "attachment" if download else "inline"
     return Response(
         content=document.content,
-        media_type="application/pdf",
+        media_type="application/octet-stream" if download else "application/pdf",
         headers={
             "Content-Disposition": f'{disposition}; filename="Mesa-{station}.pdf"',
             # Keyed by content: a changed file is a changed URL.

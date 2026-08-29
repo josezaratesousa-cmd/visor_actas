@@ -83,8 +83,27 @@ async def on_error(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={"detail": "internal error"})
 
 
-for folder in ("css", "js", "i18n", "assets"):
-    app.mount(f"/{folder}", StaticFiles(directory=WEB / folder), name=folder)
+class RevalidatedStatic(StaticFiles):
+    """Static files that must be checked before reuse.
+
+    Code and dictionaries are served without a version in the filename, so a
+    browser holding an old copy silently runs a mix of versions - and the
+    failure that produces looks like nothing that is actually in the code.
+    no-cache still allows a 304, so the cost is a conditional request rather
+    than a re-download.
+    """
+
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return response
+
+
+for folder in ("css", "js", "i18n"):
+    app.mount(f"/{folder}", RevalidatedStatic(directory=WEB / folder), name=folder)
+
+# Imagenes y marca: cambian poco y pesan, asi que se cachean de verdad.
+app.mount("/assets", StaticFiles(directory=WEB / "assets"), name="assets")
 
 
 @app.get("/health", include_in_schema=False)
