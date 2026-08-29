@@ -22,8 +22,19 @@ import { t } from '../core/i18n.js';
  * decir lo que realmente va a pasar al tocarlo, no lo que se llama en otro
  * sistema operativo.
  */
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+const IS_IOS = (() => {
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+
+  // Un iPad en Safari se presenta como "Macintosh". Distinguirlo de un Mac
+  // de verdad necesita las dos condiciones juntas: puntos tactiles Y eventos
+  // tactiles. Un Mac puede reportar maxTouchPoints por el trackpad, pero
+  // nunca expone ontouchstart; comprobar solo lo primero manda a los
+  // portatiles por el camino de iOS, que es lo que ocurrio aqui.
+  return /Macintosh/.test(ua)
+    && navigator.maxTouchPoints > 1
+    && 'ontouchstart' in window;
+})();
 
 export function render(target, record) {
   const doc = record.document;
@@ -153,7 +164,13 @@ export function wireDownload(root) {
       const blob = await fetchWithProgress(url);
       const file = new File([blob], filename, { type: 'application/pdf' });
 
-      if (IS_IOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Compartir es el camino de excepcion, no el preferido. Solo se toma
+      // cuando el sistema realmente no sabe descargar: en cualquier otro
+      // caso el navegador guarda el archivo sin intermediarios, que es lo
+      // que la persona espera al tocar "Descargar".
+      const canDownload = 'download' in document.createElement('a') && !IS_IOS;
+
+      if (!canDownload && navigator.canShare && navigator.canShare({ files: [file] })) {
         label.textContent = t('document.save_prompt');
         await navigator.share({ files: [file] });   // "Guardar en Archivos"
         hide();
