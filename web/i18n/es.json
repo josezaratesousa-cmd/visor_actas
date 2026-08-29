@@ -17,7 +17,8 @@
     "page_of": "Página {current} de {total}",
     "downloading": "Descargando",
     "downloaded": "Descarga completa",
-    "download_direct": "Preparando la descarga…"
+    "download_direct": "Preparando la descarga…",
+    "save_prompt": "Elija «Guardar en Archivos»"
   },
   "verify": {
     "cta": "Verificar con blockchain",

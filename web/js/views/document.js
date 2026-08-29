@@ -69,28 +69,19 @@ export function render(target, record) {
 const DOTS = 9;
 
 /**
- * iOS Safari ignora el atributo `download` en una URL de blob y abre el PDF
- * en su visor: la persona ve el documento, cierra, y no tiene ningun archivo.
- * Ahi la unica forma de que baje de verdad es dejar que el navegador siga el
- * enlace y lea el Content-Disposition del servidor.
+ * iOS no tiene "descargas" como el escritorio.
  *
- * Se detecta tambien el iPad moderno, que se presenta como Macintosh.
+ * Safari previsualiza el PDF aunque el servidor mande attachment y aunque el
+ * tipo sea octet-stream: mira la extension del nombre. El resultado es que la
+ * persona ve el documento, lo cierra, y no tiene ningun archivo.
+ *
+ * El camino que sí guarda es la hoja de compartir del sistema, donde aparece
+ * "Guardar en Archivos". Se llega con navigator.share pasando el archivo, que
+ * en iOS 15+ funciona y es el gesto que la persona ya conoce.
  */
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
   || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 
-/**
- * Descarga con progreso.
- *
- * En un telefono, tocar "Descargar" y que no pase nada visible durante unos
- * segundos se lee como que el boton no funciono, y la persona vuelve a
- * tocarlo. Mostrar el avance responde esa duda antes de que aparezca.
- *
- * Se usa fetch con lectura por trozos para poder contar bytes. Si algo de
- * eso falla -navegador viejo, respuesta sin Content-Length, memoria justa-
- * se cae a la descarga normal del navegador, que siempre funciona aunque no
- * se pueda medir.
- */
 export function wireDownload(root) {
   const button = root.querySelector('#btn-download');
   const panel = root.querySelector('#dl');
@@ -108,66 +99,67 @@ export function wireDownload(root) {
     label.textContent = `${t('document.downloading')} ${Math.round(pct)}%`;
   };
 
-  const restore = delay => setTimeout(() => {
-    panel.hidden = true;
-    button.closest('.doc-actions').hidden = false;
-  }, delay);
+  const show = () => { button.closest('.doc-actions').hidden = true; panel.hidden = false; };
+  const hide = () => { panel.hidden = true; button.closest('.doc-actions').hidden = false; };
+
+  // Safari restaura la pagina desde su cache al volver atras, con el
+  // temporizador a medio camino: sin esto, el indicador reaparece unos
+  // segundos como si algo siguiera pasando.
+  window.addEventListener('pageshow', hide);
+
+  /** Lee el cuerpo contando bytes, para poder mostrar el avance real. */
+  async function fetchWithProgress(url) {
+    const response = await fetch(url);
+    if (!response.ok || !response.body) throw new Error('sin cuerpo');
+    const total = Number(response.headers.get('content-length')) || 0;
+    const reader = response.body.getReader();
+    const chunks = [];
+    let received = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      // Sin Content-Length no hay porcentaje honesto: el indicador se acerca
+      // al final sin llegar nunca.
+      paint(total ? received / total * 100 : Math.min(95, received / 51200 * 100));
+    }
+    paint(100);
+    return new Blob(chunks, { type: 'application/pdf' });
+  }
 
   button.addEventListener('click', async () => {
     const url = button.dataset.url;
     const filename = button.dataset.name;
-
-    if (IS_IOS) {
-      // El navegador se encarga: descarga a Archivos con el nombre que
-      // indica el servidor, y muestra su propio indicador.
-      label.textContent = t('document.download_direct');
-      button.closest('.doc-actions').hidden = true;
-      panel.hidden = false;
-      dots.forEach(dot => { dot.dataset.on = '1'; });
-      window.location.href = url;
-      restore(2500);
-      return;
-    }
-
-    button.closest('.doc-actions').hidden = true;
-    panel.hidden = false;
+    show();
     paint(0);
 
     try {
-      const response = await fetch(url);
-      if (!response.ok || !response.body) throw new Error('sin cuerpo');
+      const blob = await fetchWithProgress(url);
+      const file = new File([blob], filename, { type: 'application/pdf' });
 
-      const total = Number(response.headers.get('content-length')) || 0;
-      const reader = response.body.getReader();
-      const chunks = [];
-      let received = 0;
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        received += value.length;
-        // Sin Content-Length no hay porcentaje honesto que mostrar, asi que
-        // el indicador avanza acercandose al final sin llegar nunca.
-        paint(total ? received / total * 100 : Math.min(95, received / 51200 * 100));
+      if (IS_IOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+        label.textContent = t('document.save_prompt');
+        await navigator.share({ files: [file] });   // "Guardar en Archivos"
+        hide();
+        return;
       }
 
-      paint(100);
       label.textContent = t('document.downloaded');
-
-      const blob = new Blob(chunks, { type: 'application/pdf' });
       const href = URL.createObjectURL(blob);
       const link = Object.assign(document.createElement('a'), { href, download: filename });
       document.body.appendChild(link);
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(href), 4000);
-    } catch {
-      // El navegador sabe descargar aunque nosotros no sepamos medirlo.
+    } catch (error) {
+      if (error && error.name === 'AbortError') { hide(); return; }  // cancelo
+      // Ultimo recurso: que lo abra el navegador. No siempre guarda, pero
+      // deja el documento a la vista y la persona puede compartirlo desde ahi.
       label.textContent = t('document.download_direct');
-      window.location.href = url;
+      window.open(url, '_blank', 'noopener');
     }
 
-    restore(1600);
+    setTimeout(hide, 1400);
   });
 }
