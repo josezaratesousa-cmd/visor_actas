@@ -28,6 +28,29 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 WEB = Path(__file__).resolve().parent.parent / "web"
+
+
+def build_version() -> str:
+    """Huella del frontend, para sellar sus URLs.
+
+    Sella el punto de entrada -index.html, hoja de estilos, app.js-. Los
+    modulos que app.js importa no llevan version porque una importacion
+    estatica no admite una URL calculada; se apoyan en no-cache, que ya
+    obliga a revalidarlos en cada carga.
+
+    Sin esto, un navegador que guardo un recurso antes de que existieran las
+    cabeceras de cache lo sigue usando y corre una mezcla de versiones, con
+    fallos que no se corresponden con el codigo desplegado.
+    """
+    import hashlib
+    digest = hashlib.sha1()  # noqa: S324 - identificador, no seguridad
+    for path in sorted(WEB.rglob("*")):
+        if path.is_file() and path.suffix in {".js", ".css", ".json", ".html"}:
+            digest.update(f"{path.name}{path.stat().st_mtime_ns}".encode())
+    return digest.hexdigest()[:10]
+
+
+BUILD = build_version()
 CODE_PATTERN = r"^[A-Za-z0-9_-]{6,120}$"
 
 
@@ -108,7 +131,7 @@ app.mount("/assets", StaticFiles(directory=WEB / "assets"), name="assets")
 
 @app.get("/health", include_in_schema=False)
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "build": BUILD}
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
@@ -116,6 +139,7 @@ async def health():
 async def index(request: Request, code: str = ""):
     """The single page. Open Graph tags are filled in per record."""
     html = (WEB / "index.html").read_text(encoding="utf-8")
+    html = html.replace("{BUILD}", BUILD)
 
     if not code:
         return HTMLResponse(html)
