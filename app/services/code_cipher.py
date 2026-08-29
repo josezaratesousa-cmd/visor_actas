@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import base64
 import os
+from typing import Callable, Protocol, runtime_checkable
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -38,10 +39,63 @@ class InvalidCode(ValueError):
     """The code is malformed, truncated, or was not produced by this key."""
 
 
-class CodeCipher:
-    """Ciphers and deciphers the identifier carried by the QR code."""
+@runtime_checkable
+class CodeResolver(Protocol):
+    """Turns the code printed in the QR into an internal identifier.
 
-    def __init__(self, key_hex: str):
+    The second seam a deployment is expected to move, after custody. An
+    entity that prefers short opaque codes backed by a lookup table, or a
+    different cipher, writes one class and changes one setting.
+    """
+
+    def decode(self, code: str) -> str:
+        """Recover the identifier, or raise InvalidCode."""
+        ...
+
+
+_RESOLVERS: dict[str, Callable[[object], CodeResolver]] = {}
+
+
+def register(name: str) -> Callable[[type], type]:
+    """Register a resolver under a name usable in CODE_RESOLVER."""
+
+    def decorator(cls: type) -> type:
+        key = name.strip().lower()
+        if key in _RESOLVERS:
+            raise ValueError(f"code resolver '{key}' is already registered")
+        _RESOLVERS[key] = cls
+        return cls
+
+    return decorator
+
+
+def available_resolvers() -> list[str]:
+    return sorted(_RESOLVERS)
+
+
+def build_resolver(settings) -> CodeResolver:
+    """Instantiate the resolver named by CODE_RESOLVER."""
+    name = (getattr(settings, "code_resolver", "") or "aes-gcm").strip().lower()
+    factory = _RESOLVERS.get(name)
+    if factory is None:
+        raise ValueError(
+            f"unknown code resolver '{name}'. "
+            f"Available: {', '.join(available_resolvers()) or 'none'}"
+        )
+    return factory(settings)
+
+
+@register("aes-gcm")
+class CodeCipher:
+    """Ciphers and deciphers the identifier carried by the QR code.
+
+    Accepts either the settings object -how the registry builds it- or a bare
+    hex key, which keeps it usable from a shell and from tests.
+    """
+
+    def __init__(self, key_hex):
+        if not isinstance(key_hex, str):
+            key_hex = getattr(key_hex, "code_cipher_key", "")
         if not key_hex:
             raise ValueError("CODE_CIPHER_KEY is empty; check the .env file")
         try:

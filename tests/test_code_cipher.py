@@ -77,3 +77,49 @@ def test_key_must_be_32_bytes_of_hex():
         CodeCipher("zz" * 32)
     with pytest.raises(ValueError, match="32 bytes"):
         CodeCipher("ab" * 16)
+
+
+# ── the seam ─────────────────────────────────────────────────────────────
+
+
+def test_a_deployment_can_plug_in_another_resolver(tmp_path):
+    """One class and one setting, same shape as the custody seam."""
+    from app.config import Settings
+    from app.services.code_cipher import (
+        CodeResolver, available_resolvers, build_resolver, register)
+
+    assert "aes-gcm" in available_resolvers()
+
+    @register("lookup-table")
+    class TableResolver:
+        """Short opaque codes resolved against a table, not deciphered."""
+
+        TABLE = {"a1b2c3d4e5": "EMC-2026/035253"}
+
+        def __init__(self, settings):
+            self.settings = settings
+
+        def decode(self, code: str) -> str:
+            try:
+                return self.TABLE[code]
+            except KeyError:
+                raise InvalidCode("unknown code") from None
+
+    settings = Settings(code_resolver="lookup-table", code_cipher_key=KEY,
+                        stamping_token="", _env_file=None)
+    resolver = build_resolver(settings)
+
+    assert isinstance(resolver, CodeResolver)
+    assert resolver.decode("a1b2c3d4e5") == "EMC-2026/035253"
+    with pytest.raises(InvalidCode):
+        resolver.decode("nope")
+
+
+def test_unknown_resolver_names_the_alternatives():
+    from app.config import Settings
+    from app.services.code_cipher import build_resolver
+
+    settings = Settings(code_resolver="wishful", code_cipher_key=KEY,
+                        stamping_token="", _env_file=None)
+    with pytest.raises(ValueError, match="aes-gcm"):
+        build_resolver(settings)

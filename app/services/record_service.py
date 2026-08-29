@@ -27,7 +27,7 @@ from typing import Any
 
 from app.config import Settings
 from app.models import RecordData, RecordStatus, Results, decode_payload
-from app.services.code_cipher import CodeCipher, InvalidCode
+from app.services.code_cipher import InvalidCode, build_resolver
 from app.services.custody import CustodyError, CustodyStorage, Document, DocumentNotFound
 from app.services.stamping import RecordNotFound, StampingClient, StampingError
 
@@ -46,7 +46,7 @@ class RecordService:
     def __init__(self, settings: Settings, storage: CustodyStorage):
         self._settings = settings
         self._storage = storage
-        self._cipher = CodeCipher(settings.code_cipher_key)
+        self._cipher = build_resolver(settings)
 
     # ── identifiers ───────────────────────────────────────────────────────
 

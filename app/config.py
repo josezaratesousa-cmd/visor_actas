@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     custody_secret_key: str = Field(default="", repr=False)
 
     code_cipher_key: str = Field(default="", repr=False)
+    # Which class turns the QR code into an identifier. See
+    # app/services/code_cipher.py to add another.
+    code_resolver: str = "aes-gcm"
     cache_path: Path = Path("/tmp/custody/cache")
 
     # ── Anchors ──────────────────────────────────────────────────────
