@@ -72,6 +72,16 @@ class Settings(BaseSettings):
     rollux_explorer: str = "https://explorer.rollux.com/tx/{value}"
     merkle_viewer: str = "https://stamping.io/es/view/?{trxid}"
 
+    # ── Nodos para verificación independiente ────────────────────────
+    # El verificador consulta la cadena por su cuenta, sin pasar por el
+    # servicio de atestación ni por su infraestructura. Que la entidad
+    # apunte a un nodo propio es justamente lo que hace independiente la
+    # verificación: si consultara un nodo del proveedor, estaría volviendo
+    # a confiar en la parte que dice estar comprobando.
+    lacchain_rpc: str = ""
+    rollux_rpc: str = "https://rpc.rollux.com"
+    rpc_timeout: int = 15
+
     # ── Throttling ───────────────────────────────────────────────────
     # Generous on purpose. Mobile carriers put tens of thousands of
     # subscribers behind one address, so a tight limit locks out a city

@@ -23,10 +23,21 @@ from pathlib import Path
 
 STAMPING = "https://api.stamping.io"
 IPFS_GATEWAY = "https://ipfs.stamping.io/"
-NODES = {
-    "Rollux": "https://rpc.rollux.com",
-    "LACChain": "http://44.198.204.18:80",
-}
+
+
+def nodes() -> dict[str, str]:
+    """Nodos a consultar, tomados de la configuración.
+
+    Deliberadamente sin valores por defecto para LACChain: la entidad debe
+    declarar el suyo. Un nodo por defecto del proveedor haría que la
+    verificación pareciera independiente sin serlo.
+    """
+    from app.config import get_settings
+    settings = get_settings()
+    return {
+        "Rollux": settings.rollux_rpc,
+        "LACChain": settings.lacchain_rpc,
+    }
 
 OK, BAD, INFO = "  [ok]  ", "  [FALLA]", "  [--]  "
 
@@ -168,17 +179,25 @@ def main() -> int:
         fallos += 1
 
     # ── 4, 5 y 6. La raíz está escrita en una cadena pública ────────────
-    for nombre, nodo in NODES.items():
+    sin_comprobar = []
+    for nombre, nodo in nodes().items():
         clave = "lacchain" if nombre == "LACChain" else "rollux"
         tx = record.get("networks", {}).get("mainnet", {}).get(clave)
         print(f"\n4. Anclaje en {nombre}")
         if not tx or tx in ("0x", "", "0"):
             print(f"{INFO}sin anclaje todavía")
             continue
+        if not nodo:
+            # Callar esto sería lo peor que puede hacer un verificador: dar
+            # por buena una cadena que nadie miró.
+            print(f"{BAD}NO VERIFICADO: no hay nodo configurado para {nombre}")
+            sin_comprobar.append(nombre)
+            continue
         try:
             datos = rpc(nodo, "eth_getTransactionByHash", [tx])
         except Exception as exc:
-            print(f"{INFO}nodo inaccesible ({exc}); no verificable ahora")
+            print(f"{BAD}NO VERIFICADO: el nodo no respondió ({exc})")
+            sin_comprobar.append(nombre)
             continue
         if not datos:
             print(f"{BAD}el nodo no conoce esa transacción: es inventada")
@@ -205,8 +224,17 @@ def main() -> int:
         print(f"{OK}existía antes de "
               f"{momento.strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
-    print("\n" + ("  VERIFICADA: ningún paso depende de creerle al servicio"
-                  if fallos == 0 else f"  {fallos} comprobación(es) fallaron"))
+    print()
+    if fallos:
+        print(f"  {fallos} comprobación(es) FALLARON")
+    elif sin_comprobar:
+        # Distinto de "verificada": nadie comprobó esos anclajes, y decir que
+        # todo está bien porque lo que se miró estaba bien es exactamente el
+        # tipo de afirmación que este programa existe para no hacer.
+        print(f"  VERIFICADA PARCIALMENTE: sin comprobar "
+              f"{', '.join(sin_comprobar)}")
+    else:
+        print("  VERIFICADA: ningún paso depende de creerle al servicio")
     return 1 if fallos else 0
 
 

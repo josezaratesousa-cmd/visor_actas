@@ -162,6 +162,43 @@ entrada hostil.** Llame a `safe_identifier()` antes de tocar el
 almacenamiento: un driver que concatena uno en una ruta o una clave sin
 validar está a un código preparado de servir un archivo arbitrario.
 
+## Verificación contra las cadenas
+
+El visor puede comprobar el anclaje por su cuenta, sin pasar por el servicio
+de atestación ni por su infraestructura:
+
+```ini
+LACCHAIN_RPC=                       # nodo de la entidad. Sin esto no se verifica
+ROLLUX_RPC=https://rpc.rollux.com
+RPC_TIMEOUT=15
+```
+
+**El nodo debe ser de la entidad.** Consultar un nodo del proveedor haría que
+la verificación pareciera independiente sin serlo: se estaría preguntando a
+la misma parte que se quiere comprobar.
+
+LACChain es **público-permisionado**. No hay endpoints abiertos publicados;
+los nodos se obtienen registrándose ante la LACChain Alliance. Mientras no
+haya uno propio, ese anclaje **no se verifica y el resultado lo dice**:
+informa *verificada parcialmente*, no *verificada*. Rollux sí tiene RPC
+públicos.
+
+```bash
+STAMPING_TOKEN=... .venv/bin/python -m tools.verify_chain acta.pdf \
+    --issuer <userId de la entidad>
+```
+
+Comprueba, en este orden: que el SHA-256 del archivo es la evidencia
+registrada, que la registró la entidad esperada, que el acta figura en el
+bloque publicado en IPFS, que las hojas de ese bloque reconstruyen la raíz
+declarada, y que esa raíz está escrita en una transacción minada de cada
+cadena, con la fecha de su bloque.
+
+Todos esos pasos salvo el del emisor se apoyan en algo que el proveedor no
+controla: IPFS es direccionable por contenido, el árbol es aritmética
+comprobable, y los nodos responden a cualquiera. Un servicio comprometido que
+inventara un hash de transacción quedaría en evidencia: el nodo no la conoce.
+
 ## Emisor esperado
 
 El identificador de transacción se deriva del hash del archivo. Eso significa
