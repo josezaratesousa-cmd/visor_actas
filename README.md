@@ -68,10 +68,23 @@ puestos antes de que nada funcione:
 | `EXPECTED_ISSUER_ID` | Cuenta que debe haber registrado el acta. Ver más abajo |
 | `CUSTODY_*` | Dónde están los PDF firmados. Ver más abajo |
 
-`STAMPING_TOKEN` es **opcional y conviene dejarlo vacío**: el visor solo usa
-la consulta pública por identificador de transacción. Así la máquina que da a
-internet no guarda ninguna credencial y no hay nada que robarle. La
-herramienta de registro sí lo necesita, y esa corre desde consola.
+`STAMPING_TOKEN` es **opcional pero recomendable**, y alcanza con uno de solo
+lectura.
+
+El identificador de transacción se deriva del hash del archivo, así que una
+segunda cuenta que selle el mismo documento genera una fila con el mismo
+identificador. La consulta pública devuelve **la registrada más tarde**, es
+decir la del impostor. Con token, la consulta se acota a la propia cuenta y
+devuelve la legítima.
+
+Sin token el visor tampoco muestra el registro ajeno —`EXPECTED_ISSUER_ID` lo
+rechaza— pero informa el acta como todavía en trámite en vez de mostrar la
+verdadera. Son dos defensas contra el mismo ataque: **el token recupera el
+registro correcto, y la comprobación de emisor impide que uno incorrecto se
+presente como verificado.** Conviene tener las dos.
+
+La herramienta de registro necesita un token con permiso de escritura, y esa
+corre desde consola, no en la máquina que da a internet.
 
 Generar una clave de cifrado:
 
