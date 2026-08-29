@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     # wants to see the record for themselves. Defaults match the current
     # deployment; an explorer that moves, or a chain id that changes, is
     # a line in the .env rather than a release.
-    ipfs_gateway: str = "https://ipfs.io/ipfs/{value}"
+    ipfs_gateway: str = "https://ipfs.stamping.io/{value}"
     lacchain_chain_id: str = "648541"
     lacchain_explorer: str = "https://explorer.lacnet.com/tx/{value}"
     rollux_chain_id: str = "570"
