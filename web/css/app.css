@@ -42,8 +42,26 @@ a { color: inherit; }
 .icon-btn svg { width: 19px; height: 19px; }
 
 /* ── document ────────────────────────────────────────────────────── */
+/* El lienzo solo reserva sitio a la derecha cuando la barra de verificacion
+   esta ahi, y solo abajo cuando hay una hoja asomando. En las pantallas de
+   estado no hay ninguna de las dos, y sin esto el contenido queda corrido a
+   la izquierda por 58 px que no ocupa nadie. */
 .canvas { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 15px calc(var(--rail) + 6px) calc(var(--sheet-peek) + 18px) 15px; }
+  padding: 15px 15px 24px; }
+[data-view="record"] .canvas {
+  padding-right: calc(var(--rail) + 6px);
+  padding-bottom: calc(var(--sheet-peek) + 18px);
+}
+
+/* Nada de la interfaz del acta se muestra hasta saber que hay un acta. Si
+   se dejan visibles y se ocultan por JS, la barra verde aparece y se va de
+   un salto en cada carga: el usuario ve parpadear algo que no le tocaba. */
+[data-view="loading"] .rail,
+[data-view="state"]   .rail,
+[data-view="loading"] .sheet,
+[data-view="state"]   .sheet,
+[data-view="loading"] #btn-share,
+[data-view="state"]   #btn-share { display: none; }
 .page { width: 100%; display: block; border-radius: 3px; margin-bottom: 12px;
   border: 1px solid var(--rule-strong); background: #fff;
   box-shadow: 0 2px 5px rgba(20,23,28,.10), 0 14px 34px -16px rgba(20,23,28,.32); }

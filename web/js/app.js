@@ -43,6 +43,7 @@ async function boot() {
   $('#rail-label').textContent = i18n.t('verify.cta');
   $('#results-note').textContent = i18n.t('results.votes', { count: record.results.voters });
 
+  document.body.dataset.view = 'record';
   documentView.render($('#canvas'), record);
   results.render($('#results-body'), record);
   share.render($('#share-body'), record);
@@ -113,9 +114,7 @@ function wire() {
 
 /** Hand the whole screen over to a state page. */
 function showState(kind) {
-  $('#rail').hidden = true;
-  document.querySelectorAll('.sheet').forEach(sheet => { sheet.hidden = true; });
-  $('#btn-share').hidden = true;
+  document.body.dataset.view = 'state';
   $('#station').textContent = '';
   $('#process').textContent = '';
   stateView.render($('#canvas'), kind);
