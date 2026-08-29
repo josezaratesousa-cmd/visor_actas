@@ -282,24 +282,28 @@ a { color: inherit; }
    already unsure whether they did something wrong; three different
    looking pages would make that worse. And none of them says "error" -
    the reader did nothing wrong in any of these cases. */
-.state { padding: 30px 6px 48px; max-width: 460px; margin: 0 auto; }
+/* Icono, titulo y bajada centrados; las listas siguen alineadas a la
+   izquierda, porque son instrucciones que se leen linea por linea y el
+   texto centrado en varias lineas cuesta seguirlo. */
+.state { padding: 34px 6px 48px; max-width: 460px; margin: 0 auto; text-align: center; }
 .state__icon {
-  width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
+  width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center;
   background: var(--paper); border: 1px solid var(--rule); color: var(--grey);
-  margin-bottom: 22px;
+  margin: 0 auto 24px;
 }
 .state--waiting .state__icon {
   background: var(--amber-faint); color: var(--amber);
   border-color: color-mix(in srgb, var(--amber) 30%, transparent);
 }
-.state__icon svg { width: 28px; height: 28px; }
+.state__icon svg { width: 31px; height: 31px; }
 .state__title {
   font-family: var(--display); font-weight: 800; font-size: 25px;
   letter-spacing: -.02em; line-height: 1.14; margin: 0 0 11px;
 }
-.state__lead { font-size: 15px; color: var(--ink-soft); line-height: 1.55; margin: 0 0 22px; }
+.state__lead { font-size: 15px; color: var(--ink-soft); line-height: 1.55;
+  margin: 0 auto 26px; max-width: 34ch; }
 
-.state__notes { list-style: none; padding: 0; margin: 0; display: flex;
+.state__notes { list-style: none; padding: 0; margin: 0; text-align: left; display: flex;
   flex-direction: column; gap: 1px; background: var(--rule);
   border: 1px solid var(--rule); border-radius: 13px; overflow: hidden; }
 .state__notes li { background: var(--card); padding: 13px 15px 13px 38px;
@@ -310,6 +314,7 @@ a { color: inherit; }
 }
 
 .state__stages { list-style: none; counter-reset: stage; padding: 0; margin: 0 0 18px;
+  text-align: left;
   background: var(--card); border: 1px solid var(--rule); border-radius: 13px; }
 .state__stages li { counter-increment: stage; position: relative;
   padding: 13px 16px 13px 48px; font-size: 14px; color: var(--ink-soft);
@@ -319,4 +324,5 @@ a { color: inherit; }
   top: 12px; width: 21px; height: 21px; border-radius: 50%; display: grid;
   place-items: center; background: var(--paper); border: 1px solid var(--rule-strong);
   font-family: var(--data); font-size: 10.5px; font-weight: 600; color: var(--grey); }
-.state__foot { font-size: 13px; color: var(--grey); line-height: 1.55; margin: 18px 0 0; }
+.state__foot { font-size: 13px; color: var(--grey); line-height: 1.55;
+  margin: 20px auto 0; max-width: 38ch; }
