@@ -74,6 +74,27 @@ a { color: inherit; }
   border: 1px solid var(--rule); color: var(--ink-soft); font-size: 13px; font-weight: 600; }
 .doc-btn:active { border-color: var(--rule-strong); color: var(--ink); }
 .doc-btn svg { width: 16px; height: 16px; }
+/* ── Descarga en curso ───────────────────────────────────────────────
+   El archivo viajando del documento al telefono. Los puntos se encienden
+   de izquierda a derecha, asi que el avance se lee de un vistazo sin
+   necesidad de leer el porcentaje. */
+.dl {
+  display: flex; align-items: center; gap: 10px; margin-top: 10px;
+  padding: 13px 14px; background: var(--card); border: 1px solid var(--rule);
+  border-radius: 11px; flex-wrap: wrap;
+}
+.dl__end { width: 26px; height: 26px; flex-shrink: 0; display: grid;
+  place-items: center; color: var(--grey); }
+.dl__end svg { width: 20px; height: 20px; }
+.dl__end--phone { color: var(--green); }
+.dl__track { flex: 1; min-width: 90px; display: flex; align-items: center;
+  justify-content: space-between; gap: 4px; }
+.dl__dot { flex: 1; height: 5px; border-radius: 100px; background: var(--rule);
+  transition: background .18s ease, transform .18s ease; }
+.dl__dot[data-on="1"] { background: var(--green); transform: scaleY(1.5); }
+.dl__label { width: 100%; text-align: center; font-size: 12.5px;
+  font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
 .doc-note { text-align: center; font-size: 11.5px; color: var(--grey);
   margin: 9px 0 0; font-family: var(--data); }
 

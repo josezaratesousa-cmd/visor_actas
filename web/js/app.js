@@ -45,6 +45,7 @@ async function boot() {
 
   document.body.dataset.view = 'record';
   documentView.render($('#canvas'), record);
+  documentView.wireDownload($('#canvas'));
   results.render($('#results-body'), record);
   share.render($('#share-body'), record);
   verification.renderSteps($('#verify-body'));

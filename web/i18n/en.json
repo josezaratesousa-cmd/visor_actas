@@ -14,7 +14,10 @@
     "open": "Open the PDF",
     "download": "Download",
     "meta": "Signed PDF · {pages} pages · {size}",
-    "page_of": "Page {current} of {total}"
+    "page_of": "Page {current} of {total}",
+    "downloading": "Downloading",
+    "downloaded": "Download complete",
+    "download_direct": "Opening the download…"
   },
   "verify": {
     "cta": "Verify on blockchain",

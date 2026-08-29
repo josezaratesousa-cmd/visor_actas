@@ -14,7 +14,10 @@
     "open": "Abrir el PDF",
     "download": "Descargar",
     "meta": "PDF firmado · {pages} páginas · {size}",
-    "page_of": "Página {current} de {total}"
+    "page_of": "Página {current} de {total}",
+    "downloading": "Descargando",
+    "downloaded": "Descarga completa",
+    "download_direct": "Abriendo la descarga…"
   },
   "verify": {
     "cta": "Verificar con blockchain",
