@@ -52,6 +52,17 @@ async def get_record(request: Request, code: str):
     return view
 
 
+def _not_modified(request: Request, etag: str) -> bool:
+    """El navegador ya tiene esta version.
+
+    El ETag se mandaba pero nunca se leia, asi que cada visita repetida se
+    llevaba el archivo entero de nuevo. Con esto una recarga cuesta unos
+    bytes de cabecera en vez del documento completo.
+    """
+    header = request.headers.get("if-none-match", "")
+    return any(part.strip().strip("W/") == etag for part in header.split(","))
+
+
 @router.get("/{code}/pdf")
 async def get_pdf(request: Request, code: str, download: bool = False):
     """The signed PDF.
@@ -65,9 +76,15 @@ async def get_pdf(request: Request, code: str, download: bool = False):
     an opaque binary is what actually makes Safari save it. The bytes are
     identical and the name still ends in .pdf, so Files opens it correctly.
     """
-    service, record = await _resolve(request, code)
-    document = _require_document(record.document)
-    station = record.identifier.split("/")[-1]
+    document = await request.app.state.records.resolve_document(code)
+    if document is None:
+        raise HTTPException(status_code=404, detail="not found")
+
+    etag = f'"{document.sha256}"'
+    if _not_modified(request, etag):
+        return Response(status_code=304, headers={"ETag": etag})
+
+    station = document.identifier.split("/")[-1]
     disposition = "attachment" if download else "inline"
     return Response(
         content=document.content,
@@ -75,18 +92,26 @@ async def get_pdf(request: Request, code: str, download: bool = False):
         headers={
             "Content-Disposition": f'{disposition}; filename="Mesa-{station}.pdf"',
             # Keyed by content: a changed file is a changed URL.
-            "ETag": f'"{document.sha256}"',
-            "Cache-Control": "public, max-age=3600",
+            "ETag": etag,
+            # El contenido esta atado a su hash: si el archivo cambiara,
+            # cambiaria la evidencia y el codigo dejaria de resolverlo.
+            "Cache-Control": "public, max-age=86400",
         },
     )
 
 
 @router.get("/{code}/pages/{number}")
 async def get_page(request: Request, code: str, number: int, density: str = ""):
-    _, record = await _resolve(request, code)
-    document = _require_document(record.document)
     if density not in {"", "@2x"}:
         raise HTTPException(status_code=400, detail="unknown density")
+
+    document = await request.app.state.records.resolve_document(code)
+    if document is None:
+        raise HTTPException(status_code=404, detail="not found")
+
+    etag = f'"{document.sha256}-{number}{density}"'
+    if _not_modified(request, etag):
+        return Response(status_code=304, headers={"ETag": etag})
     try:
         image = await request.app.state.renderer.page(
             document.content, document.sha256, number, density)
@@ -95,8 +120,7 @@ async def get_page(request: Request, code: str, number: int, density: str = ""):
     return Response(
         content=image,
         media_type="image/webp",
-        headers={"ETag": f'"{document.sha256}-{number}{density}"',
-                 "Cache-Control": "public, max-age=86400"},
+        headers={"ETag": etag, "Cache-Control": "public, max-age=86400"},
     )
 
 

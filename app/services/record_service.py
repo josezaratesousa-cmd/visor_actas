@@ -54,6 +54,24 @@ class RecordService:
         """QR code → internal identifier, e.g. 'EMC-2026/035253'."""
         return self._cipher.decode(code)
 
+    async def resolve_document(self, code: str) -> Document | None:
+        """Solo el PDF: descifra el codigo y lo lee de custodia.
+
+        Servir bytes no necesita la atestacion. Cuando el endpoint del PDF y
+        el de las imagenes usaban la cadena completa, cada descarga provocaba
+        una consulta al servicio de atestacion: una peticion barata contra
+        nosotros generaba una cara contra un tercero, que es amplificacion y
+        no solo gasto propio.
+        """
+        try:
+            identifier = self.decipher(code)
+        except InvalidCode:
+            return None
+        try:
+            return await self._storage.fetch(identifier)
+        except (DocumentNotFound, CustodyError):
+            return None
+
     # ── the chain ─────────────────────────────────────────────────────────
 
     async def resolve(self, code: str) -> ResolvedRecord:
