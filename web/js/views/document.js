@@ -12,6 +12,19 @@
 import { esc } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 
+/**
+ * iOS no tiene "descargas" como el escritorio: Safari previsualiza el PDF
+ * aunque el servidor mande attachment y aunque el tipo sea octet-stream,
+ * porque mira la extension del nombre. Lo que si guarda es la hoja de
+ * compartir del sistema, con "Guardar en Archivos" a un toque.
+ *
+ * Por eso el boton cambia de nombre y de icono segun la plataforma: debe
+ * decir lo que realmente va a pasar al tocarlo, no lo que se llama en otro
+ * sistema operativo.
+ */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
 export function render(target, record) {
   const doc = record.document;
   const pages = doc.pages.map((src, index) =>
@@ -37,9 +50,14 @@ export function render(target, record) {
       <button class="doc-btn" id="btn-download"
               data-url="${esc(doc.download_url || doc.pdf_url)}"
               data-name="${esc(doc.filename || 'acta.pdf')}">
+        ${IS_IOS ? `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v11"/><path d="m8 6.6 4-3.6 4 3.6"/>
+          <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>
+        </svg>${esc(t('document.save_ios'))}` : `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
-        </svg>${esc(t('document.download'))}
+        </svg>${esc(t('document.download'))}`}
       </button>
     </div>
 
@@ -79,9 +97,6 @@ const DOTS = 9;
  * "Guardar en Archivos". Se llega con navigator.share pasando el archivo, que
  * en iOS 15+ funciona y es el gesto que la persona ya conoce.
  */
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-
 export function wireDownload(root) {
   const button = root.querySelector('#btn-download');
   const panel = root.querySelector('#dl');
@@ -96,7 +111,7 @@ export function wireDownload(root) {
   const paint = pct => {
     const filled = Math.round(pct / 100 * DOTS);
     dots.forEach((dot, index) => { dot.dataset.on = index < filled ? '1' : '0'; });
-    label.textContent = `${t('document.downloading')} ${Math.round(pct)}%`;
+    label.textContent = `${t(IS_IOS ? 'document.preparing' : 'document.downloading')} ${Math.round(pct)}%`;
   };
 
   const show = () => { button.closest('.doc-actions').hidden = true; panel.hidden = false; };
