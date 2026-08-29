@@ -65,6 +65,7 @@ puestos antes de que nada funcione:
 | Ajuste | Qué es |
 |---|---|
 | `CODE_CIPHER_KEY` | 32 bytes en hexadecimal. Descifra el parámetro del código QR |
+| `EXPECTED_ISSUER_ID` | Cuenta que debe haber registrado el acta. Ver más abajo |
 | `CUSTODY_*` | Dónde están los PDF firmados. Ver más abajo |
 
 `STAMPING_TOKEN` es **opcional y conviene dejarlo vacío**: el visor solo usa
@@ -147,6 +148,32 @@ y se pone `CUSTODY_DRIVER=nombre-propio`.
 entrada hostil.** Llame a `safe_identifier()` antes de tocar el
 almacenamiento: un driver que concatena uno en una ruta o una clave sin
 validar está a un código preparado de servir un archivo arbitrario.
+
+## Emisor esperado
+
+El identificador de transacción se deriva del hash del archivo. Eso significa
+que **cualquiera que selle ese mismo PDF con su propia cuenta produce un
+registro que encaja**: sin comprobar quién lo registró, el visor estaría
+confirmando que *alguien* selló el documento, no que lo selló la entidad
+electoral.
+
+```ini
+EXPECTED_ISSUER_ID=ef60e6d0b2603e41328af4aa4c00a5ee3df7c47d
+EXPECTED_ISSUER_NAME=ONPE
+```
+
+El identificador se obtiene del campo `result.ownership.userId` de cualquier
+consulta a la API con un acta ya registrada por la entidad.
+
+Cuando no coincide, el visor responde **el mismo estado que un acta en
+proceso**. No dice "emisor incorrecto": a quien esté sondeando no se le
+informa nada, y a un ciudadano nunca se le muestra un tilde verde sobre un
+registro de origen desconocido. La discrepancia sí queda registrada como
+error en el log, porque durante una jornada electoral un acta atestada por
+una cuenta inesperada es algo que un operador tiene que ver el mismo día.
+
+Dejar `EXPECTED_ISSUER_ID` vacío desactiva la comprobación. **No conviene en
+producción.**
 
 ## Cambiar el descifrado del código QR
 

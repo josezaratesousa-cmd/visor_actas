@@ -37,6 +37,15 @@ class Settings(BaseSettings):
     stamping_token: str = Field(default="", repr=False)
     stamping_timeout: int = 30
 
+    # Cuenta que debe haber registrado el acta. Sin esto el visor confirma
+    # que ALGUIEN sello el documento, no que lo sello la entidad electoral:
+    # el identificador de transaccion sale del hash del archivo, asi que
+    # cualquiera que sellara ese mismo PDF con su propia cuenta produciria
+    # un registro que encaja. Vacio desactiva la comprobacion, que es una
+    # postura mas debil y esta advertida en el .env.
+    expected_issuer_id: str = ""
+    expected_issuer_name: str = ""
+
     custody_driver: Literal["local", "s3"] = "local"
     custody_path: Path = Path("/tmp/custody")
     custody_bucket: str = ""

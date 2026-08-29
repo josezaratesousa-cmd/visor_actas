@@ -105,12 +105,47 @@ class RecordService:
         # the file matches. Compared again anyway: it costs nothing, and the
         # one thing this service must never do is report a match it did not
         # actually check.
+        if not self._issued_by_the_entity(payload, identifier):
+            return ResolvedRecord(RecordStatus.PENDING, identifier, document)
+
         registered = (payload.get("result", {})
                              .get("integrity", {})
                              .get("evidence", ""))
         if registered != document.sha256:
             return ResolvedRecord(RecordStatus.PENDING, identifier, document)
         return ResolvedRecord(RecordStatus.VERIFIED, identifier, document, payload)
+
+    def _issued_by_the_entity(self, payload: dict[str, Any],
+                              identifier: str) -> bool:
+        """The record has to belong to the electoral body, not merely exist.
+
+        The transaction id is derived from the file hash, so anyone who seals
+        the same PDF under their own account produces a record that matches.
+        Without this check the viewer would be confirming that somebody
+        sealed the document - not that the entity did, which is the only
+        claim worth making on a page carrying a state emblem.
+
+        A mismatch reports PENDING rather than a state of its own: it tells
+        whoever is probing nothing, and it never shows a citizen a green tick
+        for a record of unknown origin. It is logged at error level, because
+        during an election a sheet attested by an unexpected account is
+        something an operator needs to see the same day.
+        """
+        expected = self._settings.expected_issuer_id.strip().lower()
+        if not expected:
+            return True   # comprobacion desactivada, advertido en el .env
+
+        ownership = payload.get("result", {}).get("ownership", {})
+        actual = str(ownership.get("userId", "")).strip().lower()
+        if actual == expected:
+            return True
+
+        logger.error(
+            "attestation for %s was issued by %r (%s), not by the expected "
+            "account %s - refusing to report it as verified",
+            identifier, ownership.get("name"), actual or "unknown", expected,
+        )
+        return False
 
 # ── shaping ───────────────────────────────────────────────────────────
 
