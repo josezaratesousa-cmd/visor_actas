@@ -22,6 +22,61 @@ una atestación. El registro es una herramienta aparte que corre desde consola.
 
 ---
 
+## Arquitectura
+
+Dos piezas: un backend que resuelve el código del QR y consulta las cadenas,
+y un frontend que muestra el acta. No hay base de datos.
+
+### Backend
+
+| | |
+|---|---|
+| Lenguaje | Python 3.11 |
+| Framework | **FastAPI** sobre Starlette |
+| Servidor | **uvicorn**, detrás de un proxy inverso |
+| Configuración | pydantic-settings, lee el `.env` |
+| Cliente HTTP | httpx, asíncrono |
+| PDF e imágenes | PyMuPDF y Pillow |
+| Almacenamiento | Sistema de archivos o S3, intercambiable |
+
+**Por qué asíncrono.** Cada consulta espera respuesta del servicio de
+atestación y, al verificar, de nodos de dos cadenas. Con un framework
+síncrono cada petición bloquearía un proceso mientras espera, y la espera es
+casi todo el tiempo de respuesta.
+
+**Por qué pydantic.** El contrato de las actas se valida en la puerta: los
+cuadres aritméticos —que la suma de las opciones dé los votos válidos, que
+válidos más nulos más blancos den los votantes— y la forma de cada campo. Un
+acta mal formada se rechaza al entrar, no al pintarla.
+
+**Sin base de datos.** El estado vive en el servicio de atestación y en la
+custodia. Las imágenes renderizadas se guardan en caché en disco, indexadas
+por el hash del documento.
+
+### Frontend
+
+| | |
+|---|---|
+| Lenguaje | JavaScript, módulos ES nativos |
+| Framework | Ninguno |
+| Estilos | CSS con variables, sin preprocesador |
+| Compilación | Ninguna |
+| Dependencias | Ninguna |
+
+**Por qué sin framework ni compilación.** Lo que se sirve es exactamente lo
+que está en `web/`: se puede leer, auditar y comparar sin reconstruir nada.
+En un verificador electoral eso importa más que la comodidad de desarrollo —
+cualquiera puede comprobar que el código publicado es el que corre.
+
+El costo es que nada valida la sintaxis antes que el navegador, así que las
+pruebas incluyen un paso que parsea cada módulo con `node --check`.
+
+Las páginas del acta se muestran como imágenes WebP renderizadas en el
+servidor, no con un visor de PDF incrustado: ninguno funciona de forma fiable
+en todos los teléfonos.
+
+---
+
 ## Requisitos
 
 | | |
